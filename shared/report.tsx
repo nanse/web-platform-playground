@@ -85,9 +85,9 @@ export function Report({ tech, intro }: { tech: Tech; intro?: ReactNode }) {
         <table className="w-full min-w-[400px] text-[13px]">
           <thead>
             <tr className="text-grey-500">
-              <th className="pb-2 text-left font-medium">기술</th>
+              <th className="w-[36%] pb-2 text-left font-medium">기술</th>
               {BROWSERS.map((browser) => (
-                <th key={browser} className="px-1 pb-2 text-center leading-[1.3] font-medium whitespace-pre-line">
+                <th key={browser} className="px-1 pb-2 text-center leading-[1.3] font-medium whitespace-pre">
                   {browser}
                 </th>
               ))}
@@ -96,7 +96,7 @@ export function Report({ tech, intro }: { tech: Tech; intro?: ReactNode }) {
           <tbody>
             {tech.support.map(([name, ...values]) => (
               <tr key={name} className="border-t border-grey-100">
-                <th scope="row" className="py-3 pr-2 text-left font-medium text-grey-800">
+                <th scope="row" className="py-3 pr-2 text-left font-medium break-words text-grey-800">
                   {name}
                 </th>
                 {values.map((value, i) => (

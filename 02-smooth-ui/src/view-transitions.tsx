@@ -1,5 +1,6 @@
 import { startTransition, useState, ViewTransition } from 'react'
 import { Report } from './report'
+import { bullets, Code, ExplainTitle, Lead, numbered, strong, Topic } from '../../shared/explain'
 import { Button, Card, InfoList, Note, Screen, useNav, yesNo } from '../../shared/ui'
 
 const JOBS = [
@@ -70,40 +71,14 @@ startTransition(() => setShow(false))
   </ViewTransition>
 )}`
 
-const strong = 'font-semibold text-grey-900'
-const bullets = 'flex list-disc flex-col gap-1.5 pl-5 marker:text-grey-400'
-
-function Topic({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-3xl bg-grey-50 p-5">
-      <h3 className="flex items-center gap-2 text-[17px] font-semibold text-grey-900">
-        <span aria-hidden>{icon}</span>
-        {title}
-      </h3>
-      <div className="mt-3 flex flex-col gap-3 text-[15px] leading-[1.65] text-grey-700">{children}</div>
-    </section>
-  )
-}
-
-function Code({ label, code }: { label: string; code: string }) {
-  return (
-    <figure>
-      <figcaption className="mb-1.5 text-[13px] font-semibold text-grey-500">{label}</figcaption>
-      <pre className="overflow-x-auto rounded-2xl bg-grey-900 p-4 text-[12.5px] leading-[1.6] text-grey-100">
-        <code>{code}</code>
-      </pre>
-    </figure>
-  )
-}
-
 function Explainer() {
   return (
     <>
-      <h2 className="mt-4 text-[20px] font-bold tracking-[-0.01em] text-grey-900">{'<ViewTransition>은 무엇을 쉽게 해주나요?'}</h2>
-      <p className="text-[17px] leading-[1.6] text-grey-700">
+      <ExplainTitle>{'<ViewTransition>은 무엇을 쉽게 해주나요?'}</ExplainTitle>
+      <Lead>
         화면이 A에서 B로 바뀌는 <strong className={strong}>"중간 과정"</strong>을 React 상태가 아니라 브라우저가 맡아요. 개발자는 마지막 모습만
         적으면 되고, 사용자는 화면이 바뀌어도 무엇이 어디로 갔는지 놓치지 않아요.
-      </p>
+      </Lead>
 
       <Topic icon="🧹" title="코드가 이렇게 줄어요">
         <p>핵심은 애니메이션 때문에 생기던 "중간 상태"를 컴포넌트에서 없애는 거예요.</p>
@@ -150,7 +125,7 @@ function Explainer() {
 
       <Topic icon="📏" title="React가 권하는 원칙">
         <p>React 19.3 블로그가 Suspense와 함께 쓸 때 권하는 원칙이에요.</p>
-        <ol className="flex list-decimal flex-col gap-1.5 pl-5 marker:font-semibold marker:text-primary">
+        <ol className={numbered}>
           <li>로딩 화면은 애니메이션 없이 바로 보여줘요.</li>
           <li>로딩 화면이 완성된 화면으로 바뀔 때만 움직여요.</li>
           <li>기다릴 필요가 없는 부분은 애니메이션 없이 바로 보여줘요.</li>
