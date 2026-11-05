@@ -4,7 +4,7 @@ import { Report } from './report'
 
 const CACHE = 'offline-lab-v1'
 
-function useOnline() {
+export function useOnline() {
   return useSyncExternalStore(
     (listener) => {
       addEventListener('online', listener)
@@ -30,6 +30,39 @@ function pageFiles() {
   return [...new Set(['/', ...resources.filter((url) => url.startsWith(location.origin))])]
 }
 
+/** 온라인·오프라인 표시예요. 오프라인일 때 보여줄 문장은 화면마다 달라서 받아요. */
+export function OnlineStatus({ offline }: { offline: string }) {
+  const online = useOnline()
+  return (
+    <div
+      className={`flex items-center gap-2 rounded-2xl px-5 py-4 text-[15px] font-semibold ${
+        online ? 'bg-grey-50 text-grey-800' : 'bg-[#fff4e5] text-[#c25e00]'
+      }`}
+      aria-live="polite"
+    >
+      <span className={`size-2 rounded-full ${online ? 'bg-[#03b26c]' : 'bg-[#ff9500]'}`} aria-hidden />
+      {online ? '지금은 온라인이에요' : offline}
+    </div>
+  )
+}
+
+export function Steps({ title, steps }: { title: string; steps: string[] }) {
+  return (
+    <Card title={title}>
+      <ol className="flex flex-col gap-3">
+        {steps.map((step, i) => (
+          <li key={step} className="flex gap-3 text-[15px] leading-[1.6] text-grey-700">
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-weak text-[13px] font-bold text-primary">
+              {i + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+    </Card>
+  )
+}
+
 const STEPS = [
   'DevTools → Network 탭에서 "Offline"을 켜요.',
   '이 화면을 새로고침해요.',
@@ -38,7 +71,6 @@ const STEPS = [
 
 export function ServiceWorker({ feature }: { feature: { id: string; icon: string } }) {
   const { back } = useNav()
-  const online = useOnline()
   const supported = 'serviceWorker' in navigator
   const [registered, setRegistered] = useState(false)
   const [paths, setPaths] = useState<string[]>([])
@@ -88,27 +120,8 @@ export function ServiceWorker({ feature }: { feature: { id: string; icon: string
       }
     >
       {result && <Result>{result}</Result>}
-      <div
-        className={`flex items-center gap-2 rounded-2xl px-5 py-4 text-[15px] font-semibold ${
-          online ? 'bg-grey-50 text-grey-800' : 'bg-[#fff4e5] text-[#c25e00]'
-        }`}
-        aria-live="polite"
-      >
-        <span className={`size-2 rounded-full ${online ? 'bg-[#03b26c]' : 'bg-[#ff9500]'}`} aria-hidden />
-        {online ? '지금은 온라인이에요' : '지금은 오프라인이에요. 담아 둔 파일로 열렸어요'}
-      </div>
-      <Card title="오프라인에서 열어 보기">
-        <ol className="flex flex-col gap-3">
-          {STEPS.map((step, i) => (
-            <li key={step} className="flex gap-3 text-[15px] leading-[1.6] text-grey-700">
-              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-weak text-[13px] font-bold text-primary">
-                {i + 1}
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-      </Card>
+      <OnlineStatus offline="지금은 오프라인이에요. 담아 둔 파일로 열렸어요" />
+      <Steps title="오프라인에서 열어 보기" steps={STEPS} />
       <Card title="지금 상태">
         <InfoList
           items={[
