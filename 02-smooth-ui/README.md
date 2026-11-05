@@ -47,6 +47,85 @@ pnpm --filter 02-smooth-ui dev   # https://localhost:5102
 | Popover API | `src/popover.tsx`, `src/style.css`의 `.sheet` | JavaScript 없이 바텀시트 열기 → "바텀시트 열기" 클릭 → 바깥을 누르거나 Esc |
 | Anchor Positioning | `src/anchor.tsx`, `src/style.css`의 `.anchor-tip` | 말풍선이 버튼 따라가기 → "버튼 옮기기"를 여러 번 클릭 → 위쪽 끝에서는 말풍선이 아래로 뒤집혀요 |
 
+## React `<ViewTransition>`은 무엇을 쉽게 해주나요?
+
+**한 줄로:** 화면이 A에서 B로 바뀌는 "중간 과정"을 React 상태가 아니라 브라우저가 맡아요. 개발자는 마지막 모습만 적으면 되고, 사용자는 화면이 바뀌어도 무엇이 어디로 갔는지 놓치지 않아요.
+
+[React 19.3 블로그](https://react.dev/blog/2026/09/09/react-19-3) 내용을 쉽게 옮겼어요. 같은 내용이 View Transitions 화면 아래쪽에도 있어요.
+
+### 코드가 이렇게 줄어요
+
+핵심은 애니메이션 때문에 생기던 "중간 상태"를 컴포넌트에서 없애는 거예요.
+
+1. **사라질 때 움직이기**
+   - 전에는: 요소를 바로 지우면 애니메이션을 보여줄 수 없어서, "사라지는 중" 상태를 하나 더 두고 애니메이션이 끝나면 지웠어요. AnimatePresence나 react-transition-group이 하던 일이에요.
+   - 이제는: 브라우저가 이전 화면을 사진(스냅샷)으로 찍어 두고 움직여요. 요소는 바로 지워도 돼요.
+2. **목록 썸네일이 상세 이미지로 이어지기**
+   - 전에는: 바뀌기 전후 위치를 `getBoundingClientRect`로 재고, 거꾸로 옮겼다가 되돌리는 FLIP을 직접 짰어요. 서로 다른 컴포넌트끼리 좌표도 주고받아야 했어요.
+   - 이제는: 같은 `name`의 `<ViewTransition>`이 한 곳에서 사라지고 다른 곳에 나타나면 알아서 이어져요.
+3. **방향마다 다르게 움직이기**
+   - 전에는: "앞으로/뒤로"를 상태로 저장하고 props로 내려서 className을 나눴어요.
+   - 이제는: `addTransitionType`으로 "왜 바뀌었는지"를 업데이트에 붙이면 돼요. 상태가 늘지 않아요.
+4. **로딩할 때 깜빡이지 않기**
+   - 전에는: 이미지와 폰트마다 `onLoad` 플래그를 두고, 다 됐는지 모아서 확인했어요.
+   - 이제는: `<ViewTransition>`과 `<Suspense>`로 감싸면, 이미지와 폰트까지 다 준비된 뒤 한 번에 넘어가요.
+5. **그리는 타이밍 맞추기**
+   - 전에는: `document.startViewTransition`을 직접 쓰면 콜백 안에서 `flushSync`로 바로 그려야 해서, React의 동시성 렌더링·Suspense와 부딪혔어요.
+   - 이제는: React가 화면을 그리는 순간에 맞춰 알아서 불러요. 직접 부르지 않아요.
+
+예를 들어 사라지는 애니메이션은 이렇게 달라져요.
+
+```jsx
+// 전에는: 애니메이션 때문에 상태가 하나 더 생겨요
+const [show, setShow] = useState(true)
+const [exiting, setExiting] = useState(false)
+
+{(show || exiting) && (
+  <div
+    className={exiting ? 'fade-out' : ''}
+    onAnimationEnd={() => {
+      if (exiting) {
+        setExiting(false)
+        setShow(false)
+      }
+    }}
+  >
+    <Video />
+  </div>
+)}
+```
+
+```jsx
+// 이제는: 마지막 모습만 적어요
+startTransition(() => setShow(false))
+
+{show && (
+  <ViewTransition>
+    <Video />
+  </ViewTransition>
+)}
+```
+
+### 사용자는 이렇게 느껴요
+
+- **무엇이 바뀌었는지 놓치지 않아요.** 화면이 툭 바뀌면 "방금 누른 게 어디 갔지?" 하고 다시 찾아야 해요. 썸네일이 상세 이미지로 커지거나 다음 화면이 옆에서 들어오면, 무엇이 왜 바뀌었는지 눈에 보여요.
+- **덜 깜빡이고 덜 흔들려요.** 이미지와 폰트가 따로따로 튀어나오지 않고, 로딩 화면에서 완성된 화면으로 한 번에 넘어가요.
+- **입력은 기다리지 않아요.** `startTransition`, Suspense, `useDeferredValue`로 생긴 업데이트만 움직여요. 타이핑 같은 급한 업데이트는 바로 반영돼요.
+
+### React가 권하는 원칙
+
+React 19.3 블로그가 Suspense와 함께 쓸 때 권하는 원칙이에요.
+
+1. 로딩 화면은 애니메이션 없이 바로 보여줘요.
+2. 로딩 화면이 완성된 화면으로 바뀔 때만 움직여요.
+3. 기다릴 필요가 없는 부분은 애니메이션 없이 바로 보여줘요.
+
+### 대신 조심할 것
+
+- 아직 웹(DOM)에서만 돼요. React Native는 지원을 준비하고 있어요.
+- 많이 쓰면 오히려 느려 보여요. 블로그도 Suspense 애니메이션은 아껴 쓰라고 해요.
+- 전환하는 동안에는 화면 사진(스냅샷)이 위를 덮고 있어요. 애니메이션은 짧게 해요. 이 샘플의 화면 이동은 0.28초예요.
+
 ## 기술별로 자세히
 
 ### View Transitions · ✅ 공고 목록 → 상세에서 해볼 만해요
