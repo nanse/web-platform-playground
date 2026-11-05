@@ -1,4 +1,5 @@
 // README의 "원티드에 필요할까요?"와 "어디서 동작하나요?"를 화면에서도 보여줘요. 내용을 고치면 README도 같이 고쳐요.
+import type { ReactNode } from 'react'
 import { Report as SharedReport, type Tech } from '../../shared/report'
 
 const TECHS = {
@@ -20,6 +21,29 @@ const TECHS = {
       ['Service Worker', '40+', '40+', '11.1+', '11.3+', '44+'],
       ['Cache Storage', '43+', '43+', '11.1+', '11.3+', '41+'],
     ],
+  },
+  'offline-data': {
+    name: 'Service Worker로 API 응답 담기',
+    verdict: 'with',
+    verdictLabel: 'PWA를 하면 공개 데이터만 담아요',
+    reason:
+      '지하철이나 엘리베이터처럼 잠깐 끊기는 곳에서, 오류 화면 대신 마지막에 받은 공고 목록을 보여줄 수 있어요. 받은 시각을 같이 보여주면 사용자가 옛 정보와 헷갈리지 않아요.',
+    limit:
+      '담아 둔 공고는 그사이 마감됐을 수 있어서, 지원하기 같은 행동은 늘 서버에 다시 확인해야 해요. 내 지원 현황, 이력서 같은 개인 데이터는 담으면 안 돼요. Cache Storage는 Cache-Control: no-store를 보지 않아서, 로그아웃한 뒤에도 남아요.',
+    measure: '네트워크 오류로 목록을 못 그린 횟수와 그 뒤 떠난 비율을 먼저 재요. 이 숫자가 작으면 넣지 않아도 돼요.',
+    docs: [
+      ['web.dev · 오프라인 쿡북 (전략별 코드)', 'https://web.dev/articles/offline-cookbook'],
+      ['Chrome · Workbox 캐싱 전략', 'https://developer.chrome.com/docs/workbox/caching-strategies-overview'],
+      ['MDN · Cache', 'https://developer.mozilla.org/docs/Web/API/Cache'],
+      ['MDN · Background Synchronization API', 'https://developer.mozilla.org/docs/Web/API/Background_Synchronization_API'],
+      ['TanStack Query · persistQueryClient', 'https://tanstack.com/query/latest/docs/framework/react/plugins/persistQueryClient'],
+    ],
+    support: [
+      ['Service Worker', '40+', '40+', '11.1+', '11.3+', '44+'],
+      ['Cache Storage', '43+', '43+', '11.1+', '11.3+', '41+'],
+      ['끊긴 동안 보낸 요청 나중에 보내기 (Background Sync)', '49+', '49+', '❌', '❌', '❌'],
+    ],
+    supportNote: 'Background Sync는 크롬 계열에서만 돼요. 사파리와 파이어폭스에서는 연결된 뒤 다시 보내게 안내해요.',
   },
   'indexed-db': {
     name: 'IndexedDB',
@@ -61,4 +85,4 @@ const TECHS = {
   },
 } satisfies Record<string, Tech>
 
-export const Report = ({ id }: { id: keyof typeof TECHS }) => <SharedReport tech={TECHS[id]} />
+export const Report = ({ id, intro }: { id: keyof typeof TECHS; intro?: ReactNode }) => <SharedReport tech={TECHS[id]} intro={intro} />

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, Button, FeatureSections, Note, Screen, useNav, type Section } from '../../shared/ui'
 import { IndexedDb } from './indexed-db'
+import { OfflineData } from './offline-data'
 import { Opfs } from './opfs'
 import { ServiceWorker } from './service-worker'
 
@@ -16,6 +17,14 @@ const SECTIONS: Section[] = [
         screen: ServiceWorker,
         title: '인터넷이 끊겨도 열리게 하기',
         summary: 'Web Push와 오프라인 안내 화면에 필요해요',
+        supported: 'serviceWorker' in navigator,
+      },
+      {
+        id: 'offline-data',
+        icon: '📰',
+        screen: OfflineData,
+        title: '끊겨도 받아 둔 공고 보여주기',
+        summary: 'fetch로 받은 데이터는 공개 데이터만 담아요',
         supported: 'serviceWorker' in navigator,
       },
     ],
