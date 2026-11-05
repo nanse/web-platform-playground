@@ -22,8 +22,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        const copy = response.clone()
-        event.waitUntil(caches.open(CACHE).then((cache) => cache.put(request, copy)))
+        // 오류 응답(404, 500)은 담지 않아요. 담으면 멀쩡하게 담아 둔 응답을 덮어써요.
+        if (response.ok) {
+          const copy = response.clone()
+          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(request, copy)))
+        }
         return response
       })
       .catch(async () => {
