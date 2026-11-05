@@ -1,3 +1,4 @@
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { https } from '../scripts/cert.ts'
@@ -22,7 +23,7 @@ const headers = {
 
 // HMR은 IWA에서 동작하지 않아서 dev도 build + preview로 띄워요.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: { https, port: 5111, strictPort: true },
   preview: { https, port: 5111, strictPort: true, headers },
 })
