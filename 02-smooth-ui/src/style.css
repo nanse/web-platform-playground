@@ -1,58 +1,8 @@
 @import 'tailwindcss';
 @import '../../shared/theme.css';
-
-/* ── View Transitions ──────────────────────────────────────────────
-   <ViewTransition>에 넘긴 이름(slide-*)이 view-transition-class로 붙어요.
-   앞으로 갈 때는 왼쪽으로, 뒤로 갈 때는 오른쪽으로 밀려나요. */
-::view-transition-group(*) {
-  animation-duration: 280ms;
-  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-::view-transition-old(.slide-to-left) {
-  animation: 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both slide-to-left;
-}
-::view-transition-new(.slide-from-right) {
-  animation: 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both slide-from-right;
-}
-::view-transition-old(.slide-to-right) {
-  animation: 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both slide-to-right;
-}
-::view-transition-new(.slide-from-left) {
-  animation: 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both slide-from-left;
-}
-@keyframes slide-to-left {
-  to {
-    transform: translateX(-24%);
-    opacity: 0;
-  }
-}
-@keyframes slide-from-right {
-  from {
-    transform: translateX(24%);
-    opacity: 0;
-  }
-}
-@keyframes slide-to-right {
-  to {
-    transform: translateX(24%);
-    opacity: 0;
-  }
-}
-@keyframes slide-from-left {
-  from {
-    transform: translateX(-24%);
-    opacity: 0;
-  }
-}
-
-/* 움직임 줄이기를 켠 사람에게는 애니메이션 없이 바로 바꿔요. */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
+@import '../../shared/ui.css';
+/* shared/의 컴포넌트에 쓴 클래스도 Tailwind가 찾게 해요. */
+@source '../../shared';
 
 /* ── Popover: 바텀시트 ─────────────────────────────────────────────
    popover 기본 모습(가운데, 테두리)을 지우고 바닥에 붙여요.

@@ -16,7 +16,7 @@ web-platform-playground/
 ├── 04-multi-tab/            # https://localhost:5104  Web Locks, BroadcastChannel
 ├── 05-performance/          # https://localhost:5105  LCP·INP·CLS, bfcache, Speculation Rules
 ├── 06-identity/             # https://localhost:5106  Passkeys, PasswordCredential, WebOTP
-├── shared/theme.css         # 모든 샘플이 같이 쓰는 색과 글꼴 (Tailwind @theme)
+├── shared/                  # 샘플들이 같이 쓰는 디자인: 색·글꼴(theme.css), 화면 틀(ui.tsx·ui.css), 판단 화면(report.tsx)
 └── scripts/cert.ts          # mkcert로 localhost HTTPS 인증서 생성
 ```
 

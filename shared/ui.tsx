@@ -1,16 +1,74 @@
-// ponytail: 01-install-and-launch/src/ui.tsx와 같은 화면 틀이에요. 여기는 화면 이동에 <ViewTransition>을 붙인 버전이에요.
-// 세 샘플이 같은 틀을 쓰게 되면 shared/로 옮겨요(색과 글꼴은 이미 shared/theme.css에 있어요).
+// 샘플들이 같이 쓰는 화면 틀이에요. 화면 이동은 React <ViewTransition>으로 움직여요(애니메이션 CSS는 shared/ui.css).
+// 쓰는 샘플의 vite.config.ts에 resolve.dedupe: ['react', 'react-dom']가 있어야 이 폴더에서 react를 찾을 수 있어요.
 import {
   addTransitionType,
   createContext,
   startTransition,
   use,
   useEffect,
+  useLayoutEffect,
   useState,
   ViewTransition,
   type ComponentProps,
+  type ComponentType,
   type ReactNode,
 } from 'react'
+
+export type FeatureRef = { id: string; icon: string }
+
+export type Feature = FeatureRef & {
+  screen: ComponentType<{ feature: FeatureRef }>
+  title: string
+  summary: string
+  supported: boolean
+}
+
+export type Section = { title: string; features: Feature[] }
+
+/** 해시(#id)로 기능 화면을 고르고, 없으면 home을 보여줘요. */
+export function App({ sections, home }: { sections: Section[]; home: ReactNode }) {
+  const { route, nav } = useRouter()
+  // 레이아웃 단계에서 맨 위로 올려야, 새 화면의 스냅샷이 맨 위에서 찍혀요.
+  useLayoutEffect(() => {
+    scrollTo(0, 0)
+  }, [route])
+
+  const feature = sections.flatMap((section) => section.features).find((f) => f.id === route)
+  return <NavContext value={nav}>{feature ? <feature.screen feature={{ id: feature.id, icon: feature.icon }} /> : home}</NavContext>
+}
+
+/** 첫 화면의 기능 목록. 묶음 제목은 원티드 판단 순서로 써요. */
+export function FeatureSections({ sections }: { sections: Section[] }) {
+  const { go } = useNav()
+  return sections.map((section) => (
+    <section key={section.title} className="-mx-6">
+      <h2 className="px-6 pt-2 pb-1 text-[14px] font-semibold text-grey-500">{section.title}</h2>
+      <ul>
+        {section.features.map((feature) => (
+          <li key={feature.id}>
+            <button
+              onClick={() => go(feature.id)}
+              className="flex w-full items-center gap-4 px-6 py-3.5 text-left transition hover:bg-grey-50 active:bg-grey-100 focus-visible:bg-grey-50 focus-visible:outline-none"
+            >
+              <FeatureIcon id={feature.id} icon={feature.icon} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[17px] font-semibold text-grey-900">{feature.title}</span>
+                <span className="block truncate text-[14px] text-grey-500">{feature.summary}</span>
+              </span>
+              <span
+                className={`shrink-0 rounded-lg px-2 py-1 text-[13px] font-semibold ${
+                  feature.supported ? 'bg-primary-weak text-primary' : 'bg-grey-100 text-grey-500'
+                }`}
+              >
+                {feature.supported ? '바로 가능' : '미지원'}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))
+}
 
 type Nav = { go: (id: string) => void; back: () => void }
 export const NavContext = createContext<Nav>({ go() {}, back() {} })
@@ -62,6 +120,8 @@ const SLIDE_IN = { forward: 'slide-from-right', back: 'slide-from-left', default
 const SLIDE_OUT = { forward: 'slide-to-left', back: 'slide-to-right', default: 'none' }
 
 type ScreenProps = {
+  /** 첫 화면(뒤로 가기가 없는 화면) 위쪽에 보여줄 샘플 이름. */
+  brand?: string
   /** 첫 화면 목록의 아이콘과 같은 이름을 줘서, 아이콘이 이 화면 제목 위로 이어져요(공유 요소 전환). */
   feature?: { id: string; icon: string }
   title: string
@@ -73,7 +133,7 @@ type ScreenProps = {
 }
 
 /** 한 화면 = 제목 하나 + 할 일 하나(cta). 위쪽 바와 아래 버튼은 화면이 바뀌어도 제자리에서 바뀌고, 본문만 밀려나요. */
-export function Screen({ feature, title, description, apis, children, cta, onBack }: ScreenProps) {
+export function Screen({ brand, feature, title, description, apis, children, cta, onBack }: ScreenProps) {
   return (
     <>
       <ViewTransition name="topbar">
@@ -89,7 +149,7 @@ export function Screen({ feature, title, description, apis, children, cta, onBac
               </svg>
             </button>
           ) : (
-            <span className="px-3 text-[15px] font-bold text-grey-900">Smooth Lab</span>
+            <span className="px-3 text-[15px] font-bold text-grey-900">{brand}</span>
           )}
         </header>
       </ViewTransition>

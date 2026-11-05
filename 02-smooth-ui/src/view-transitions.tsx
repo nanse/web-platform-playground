@@ -1,6 +1,6 @@
 import { startTransition, useState, ViewTransition } from 'react'
 import { Report } from './report'
-import { Button, Card, InfoList, Note, Screen, useNav, yesNo } from './ui'
+import { Button, Card, InfoList, Note, Screen, useNav, yesNo } from '../../shared/ui'
 
 const JOBS = [
   { id: 1, icon: '🎨', title: '프로덕트 디자이너', meta: '경력 3년 이상' },

@@ -43,7 +43,7 @@ pnpm --filter 02-smooth-ui dev   # https://localhost:5102
 
 | 기술 | 코드 | 해보는 방법 |
 | --- | --- | --- |
-| View Transitions | `src/ui.tsx`(화면 이동), `src/view-transitions.tsx`, `src/style.css` | 화면을 부드럽게 잇기 → "순서 섞기" 클릭. 첫 화면과 기능 화면을 오가면 아이콘이 날아가듯 이어져요 |
+| View Transitions | `../shared/ui.tsx`·`../shared/ui.css`(화면 이동), `src/view-transitions.tsx` | 화면을 부드럽게 잇기 → "순서 섞기" 클릭. 첫 화면과 기능 화면을 오가면 아이콘이 날아가듯 이어져요 |
 | Popover API | `src/popover.tsx`, `src/style.css`의 `.sheet` | JavaScript 없이 바텀시트 열기 → "바텀시트 열기" 클릭 → 바깥을 누르거나 Esc |
 | Anchor Positioning | `src/anchor.tsx`, `src/style.css`의 `.anchor-tip` | 말풍선이 버튼 따라가기 → "버튼 옮기기"를 여러 번 클릭 → 위쪽 끝에서는 말풍선이 아래로 뒤집혀요 |
 
@@ -84,5 +84,5 @@ pnpm --filter 02-smooth-ui dev   # https://localhost:5102
 - 브라우저 뒤로 가기(popstate)는 React가 애니메이션 없이 바로 바꿔요. 앱 안의 뒤로 가기 버튼은 움직여요.
 - 움직임 줄이기(`prefers-reduced-motion`)를 켜면 화면 이동과 바텀시트 모두 애니메이션 없이 바뀌어요.
 - 버튼 자리는 grid 정렬로만 바꿔요. `transform`으로 옮기면 말풍선이 따라오지 않을 수 있어요.
-- 화면은 [Tailwind CSS](https://tailwindcss.com) v4로 만들었어요. 색과 글꼴은 다른 샘플과 같이 `../shared/theme.css`를 써요.
+- 화면은 [Tailwind CSS](https://tailwindcss.com) v4로 만들었어요. 색·글꼴, 화면 틀, 판단 화면은 다른 샘플과 같이 `../shared/`를 써요. 그래서 `vite.config.ts`에 `resolve.dedupe: ['react', 'react-dom']`이 있어요.
 - "원티드에 필요할까요?", "어디서 동작하나요?", 참고 문서는 앱의 기능 화면 맨 아래에도 있어요. 내용은 `src/report.tsx`에 모여 있으니, 고칠 때 이 README와 함께 고쳐요.

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Report } from './report'
-import { Button, Card, InfoList, Note, Result, Screen, useNav, yesNo } from './ui'
+import { Button, Card, InfoList, Note, Result, Screen, useNav, yesNo } from '../../shared/ui'
 
 const FACTS = [
   { icon: '🔝', title: '맨 위 층(top layer)에 떠요', text: 'z-index나 overflow: hidden에 가려지지 않아요.' },

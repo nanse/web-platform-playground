@@ -1,6 +1,6 @@
 import { startTransition, useState, ViewTransition } from 'react'
 import { Report } from './report'
-import { Button, Card, InfoList, Note, Screen, useNav, yesNo } from './ui'
+import { Button, Card, InfoList, Note, Screen, useNav, yesNo } from '../../shared/ui'
 
 // 버튼 자리는 grid 정렬로만 바꿔요. transform으로 옮기면 말풍선이 따라오지 않을 수 있어요.
 const SPOTS = [
