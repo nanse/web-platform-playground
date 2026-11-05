@@ -1,0 +1,13 @@
+{
+  "name": "Direct Sockets Playground",
+  "short_name": "Sockets Lab",
+  "version": "0.1.0",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }],
+  "permissions_policy": {
+    "cross-origin-isolated": ["self"],
+    "direct-sockets": ["self"],
+    "loopback-network": ["self"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "01-isolated-web-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build && vite preview",
+    "build": "vite build",
+    "preview": "vite preview",
+    "echo": "node echo-server.ts"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "catalog:",
+    "vite": "catalog:"
+  }
+}
