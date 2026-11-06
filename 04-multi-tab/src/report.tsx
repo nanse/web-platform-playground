@@ -27,15 +27,18 @@ const TECHS = {
   'web-locks': {
     name: 'Web Locks API',
     verdict: 'with',
-    verdictLabel: '갱신 API를 탭마다 직접 부를 때만 써요',
+    verdictLabel: '여러 탭이 같은 일을 겹쳐 할 때만 써요',
     reason:
-      '원티드처럼 쿠키로 로그인하면, 세션 갱신도 서버가 Set-Cookie로 처리해서 대부분 필요 없어요. 다만 브라우저 JavaScript가 갱신 API를 직접 부르고, 서버가 refresh token을 한 번만 받아주는(재사용 감지) 방식이라면, 여러 탭이 동시에 부를 때 두 번째 요청이 거절돼 갑자기 로그아웃될 수 있어요. 그때 Web Locks로 한 탭만 부르게 해요.',
+      '탭마다 알림 폴링이나 실시간 연결을 따로 연다면, 한 탭(리더)만 서버와 연결하고 다른 탭은 BroadcastChannel로 나눠 받게 할 수 있어요. 탭 수만큼 늘던 요청이 하나로 줄어요. 토큰 갱신은 원티드처럼 쿠키로 로그인하면 서버가 Set-Cookie로 처리해서 대부분 필요 없어요. 브라우저가 갱신 API를 직접 부르고 서버가 refresh token을 한 번만 받아줄 때만 필요해요.',
     limit:
-      '갱신을 서버나 미들웨어가 알아서 하거나, 직전 refresh token을 몇 초 더 받아주는(유예 시간) 서버라면 필요 없어요. 같은 브라우저의 탭끼리만 막아 줘요.',
-    revisit: '탭을 여러 개 띄운 사용자에게서 갑작스러운 로그아웃이 보고되면, 원인이 토큰 갱신 경쟁인지 먼저 확인하고 그때 써요.',
+      '같은 브라우저, 같은 출처의 탭끼리만 막아요. 다른 기기나 다른 서브도메인 사이는 서버가 막아야 해요(refresh token 유예 시간, Idempotency-Key). 탭 하나 안의 중복 요청은 진행 중인 Promise를 같이 쓰면 충분해요.',
+    measure: '사용자당 열린 탭 수와, 탭마다 겹쳐 나가는 폴링 요청 수를 먼저 재요. 겹치는 요청이 적으면 넣지 않아도 돼요.',
+    revisit: '탭을 여러 개 띄운 사용자에게서 갑작스러운 로그아웃이 보고되면, 원인이 토큰 갱신 경쟁인지 먼저 확인해요.',
     docs: [
       ['MDN · Web Locks API', 'https://developer.mozilla.org/docs/Web/API/Web_Locks_API'],
+      ['MDN · LockManager.request() (옵션)', 'https://developer.mozilla.org/docs/Web/API/LockManager/request'],
       ['MDN · LockManager.query()', 'https://developer.mozilla.org/docs/Web/API/LockManager/query'],
+      ['W3C · Web Locks 설명서 (쓰는 곳 예시)', 'https://github.com/w3c/web-locks/blob/main/EXPLAINER.md'],
       ['Auth0 · Refresh token rotation 설정(유예 시간)', 'https://auth0.com/docs/secure/tokens/refresh-tokens/configure-refresh-token-rotation'],
       ['IETF · OAuth 2.0 보안 모범 사례 (RFC 9700)', 'https://datatracker.ietf.org/doc/html/rfc9700'],
     ],

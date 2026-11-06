@@ -10,14 +10,14 @@ pnpm --filter 04-multi-tab dev   # https://localhost:5104
 
 - **원티드에서 해볼 만한 건 BroadcastChannel이에요.** 원티드는 로그아웃 응답이 httpOnly 쿠키를 지워서, 서버 기준으로는 모든 탭이 한 번에 로그아웃돼요. 남는 건 다른 탭의 화면이에요. 인증 서버에서 redirect로 돌아온 페이지가 BroadcastChannel로 알리면, 다른 탭이 서버에 다시 물어보고 바로 로그아웃 화면으로 바뀌어요.
 - **그 전에 401 공통 처리와 "탭이 다시 보일 때 세션 확인"을 먼저 갖춰요.** BroadcastChannel은 같은 주소의 탭끼리만 통해서, 다른 서브도메인 탭은 이 두 가지로 맞춰야 해요.
-- **Web Locks는 대부분 필요 없어요.** 쿠키로 로그인하면 세션 갱신도 서버가 `Set-Cookie`로 처리해요. 브라우저가 갱신 API를 직접 부르고, 서버가 refresh token 재사용을 막을 때만 필요해요.
+- **Web Locks는 여러 탭이 같은 일을 겹쳐 할 때만 써요.** 토큰 갱신은 쿠키로 로그인하면 서버가 `Set-Cookie`로 처리해서 대부분 필요 없어요. 탭마다 알림 폴링이나 실시간 연결을 따로 연다면, 한 탭만 연결하게 할 때 써 볼 만해요.
 
 ## 한눈에 보기
 
 | 기술 | 원티드에 필요할까요? | 이유 |
 | --- | --- | --- |
 | BroadcastChannel | ✅ 로그아웃 뒤 다른 탭 화면을 맞출 때 써요 | 쿠키는 서버가 지웠는데 다른 탭 화면은 남아요. 몇 줄로 바로 맞춰요 |
-| Web Locks API | ➕ 갱신 API를 탭마다 직접 부를 때만 써요 | 쿠키 기반이면 갱신도 서버가 해서 대부분 필요 없어요 |
+| Web Locks API | ➕ 여러 탭이 같은 일을 겹쳐 할 때만 써요 | 토큰 갱신은 대부분 필요 없어요. 탭마다 여는 폴링·실시간 연결을 한 탭으로 모을 때 써요 |
 
 ## 어디서 동작하나요?
 
@@ -227,13 +227,14 @@ await navigator.locks.request('cleanup', { ifAvailable: true }, async (lock) => 
 - **한계:** 같은 출처(예: `nextweek.wanted.co.kr`)의 탭끼리만 통해요. 다른 서브도메인 탭, 다른 기기, 네이티브 앱에는 가지 않아요. 그래서 401 공통 처리와 탭이 다시 보일 때 세션 확인을 먼저 갖추고, BroadcastChannel은 그 위에 얹어요. `redirect_url`에 표시(`?auth=logout`)를 붙이려면 인증 서버가 그 주소를 허용하는지 먼저 확인해요.
 - **이렇게 확인해요:** 로그아웃한 뒤 다른 탭에서 401 오류가 나는 횟수가 줄어드는지 봐요.
 
-### Web Locks API · ➕ 갱신 API를 탭마다 직접 부를 때만 써요
+### Web Locks API · ➕ 여러 탭이 같은 일을 겹쳐 할 때만 써요
 
-- **무엇인가요:** 이름을 붙인 자물쇠를 같은 출처의 탭과 워커가 함께 써요. `navigator.locks.request(이름, 할 일)`로 자물쇠를 잡고, 할 일이 끝나면 저절로 풀려요. 다른 탭은 그동안 기다려요.
-- **문서:** [MDN · Web Locks API](https://developer.mozilla.org/docs/Web/API/Web_Locks_API) · [MDN · LockManager.query()](https://developer.mozilla.org/docs/Web/API/LockManager/query) · [Auth0 · Refresh token rotation 설정(유예 시간)](https://auth0.com/docs/secure/tokens/refresh-tokens/configure-refresh-token-rotation) · [IETF · OAuth 2.0 보안 모범 사례 (RFC 9700)](https://datatracker.ietf.org/doc/html/rfc9700)
-- **얻을 수 있는 것:** 원티드처럼 쿠키로 로그인하면, 세션 갱신도 서버가 `Set-Cookie`로 처리해서 대부분 필요 없어요. 다만 브라우저 JavaScript가 갱신 API를 직접 부르고, 서버가 refresh token을 한 번만 받아주는(재사용 감지) 방식이라면, 여러 탭이 동시에 부를 때 두 번째 요청이 거절돼 갑자기 로그아웃될 수 있어요. 그때 Web Locks로 한 탭만 부르게 해요.
-- **한계:** 갱신을 서버나 미들웨어가 알아서 하거나, 직전 refresh token을 몇 초 더 받아주는(유예 시간) 서버라면 필요 없어요. 같은 브라우저의 탭끼리만 막아 줘요.
-- **다시 볼 때:** 탭을 여러 개 띄운 사용자에게서 갑작스러운 로그아웃이 보고되면, 원인이 토큰 갱신 경쟁인지 먼저 확인하고 그때 써요.
+- **무엇인가요:** 이름을 붙인 자물쇠를 같은 출처의 탭과 워커가 함께 써요. `navigator.locks.request(이름, 할 일)`로 자물쇠를 잡고, 할 일이 끝나거나 탭이 닫히면 저절로 풀려요. 다른 탭은 그동안 기다려요.
+- **문서:** [MDN · Web Locks API](https://developer.mozilla.org/docs/Web/API/Web_Locks_API) · [MDN · LockManager.request() (옵션)](https://developer.mozilla.org/docs/Web/API/LockManager/request) · [MDN · LockManager.query()](https://developer.mozilla.org/docs/Web/API/LockManager/query) · [W3C · Web Locks 설명서](https://github.com/w3c/web-locks/blob/main/EXPLAINER.md) · [Auth0 · Refresh token rotation 설정(유예 시간)](https://auth0.com/docs/secure/tokens/refresh-tokens/configure-refresh-token-rotation) · [IETF · OAuth 2.0 보안 모범 사례 (RFC 9700)](https://datatracker.ietf.org/doc/html/rfc9700)
+- **얻을 수 있는 것:** 탭마다 알림 폴링이나 실시간 연결을 따로 연다면, 한 탭(리더)만 서버와 연결하고 다른 탭은 BroadcastChannel로 나눠 받게 할 수 있어요. 탭 수만큼 늘던 요청이 하나로 줄어요. 토큰 갱신은 원티드처럼 쿠키로 로그인하면 서버가 `Set-Cookie`로 처리해서 대부분 필요 없어요. 브라우저가 갱신 API를 직접 부르고 서버가 refresh token을 한 번만 받아줄 때만 필요해요.
+- **한계:** 같은 브라우저, 같은 출처의 탭끼리만 막아요. 다른 기기나 다른 서브도메인 사이는 서버가 막아야 해요(refresh token 유예 시간, Idempotency-Key). 탭 하나 안의 중복 요청은 진행 중인 Promise를 같이 쓰면 충분해요.
+- **이렇게 확인해요:** 사용자당 열린 탭 수와, 탭마다 겹쳐 나가는 폴링 요청 수를 먼저 재요. 겹치는 요청이 적으면 넣지 않아도 돼요.
+- **다시 볼 때:** 탭을 여러 개 띄운 사용자에게서 갑작스러운 로그아웃이 보고되면, 원인이 토큰 갱신 경쟁인지 먼저 확인해요.
 
 ## 알아두면 좋은 것
 

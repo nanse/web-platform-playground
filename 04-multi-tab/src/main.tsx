@@ -20,7 +20,7 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    title: '갱신 API를 직접 부를 때만 써요',
+    title: '여러 탭이 같은 일을 겹쳐 할 때만 써요',
     features: [
       {
         id: 'web-locks',
@@ -41,7 +41,7 @@ function Home() {
     <Screen
       brand="Multi-tab Lab"
       title={'탭을 여러 개 열어도\n하나처럼 움직이게 해 볼까요?'}
-      description="원티드처럼 httpOnly 쿠키로 로그인하는 서비스에서 해볼 만한 건, 로그아웃하고 돌아온 뒤 BroadcastChannel로 다른 탭 화면을 맞추는 거예요. Web Locks는 브라우저가 갱신 API를 직접 부를 때만 필요해요."
+      description="원티드처럼 httpOnly 쿠키로 로그인하는 서비스에서 해볼 만한 건, 로그아웃하고 돌아온 뒤 BroadcastChannel로 다른 탭 화면을 맞추는 거예요. Web Locks는 여러 탭이 같은 일을 겹쳐 할 때만 필요해요."
       cta={<Button onClick={() => go(SECTIONS[0].features[0].id)}>하나씩 해보기</Button>}
     >
       <FeatureSections sections={SECTIONS} />
