@@ -16,7 +16,13 @@ type Token = { version: number; by: string; at: string }
 // 토큰은 흉내만 내요. 모든 탭이 같이 보도록 localStorage에 둬요.
 const readToken = (): Token => JSON.parse(localStorage.getItem(TOKEN_KEY) ?? 'null') ?? { version: 1, by: '', at: '' }
 
-const CODE = `const before = readToken()
+const BASIC_CODE = `await navigator.locks.request('token-refresh', async () => {
+  // 이 안은 한 번에 한 탭만 들어와요. 다른 탭은 여기서 기다려요.
+  await refreshToken()
+})
+// 함수(Promise)가 끝나면 자물쇠가 저절로 풀려요.`
+
+const REFRESH_CODE = `const before = readToken()
 
 await navigator.locks.request('token-refresh', async () => {
   // 기다리는 동안 다른 탭이 이미 갱신했으면 그대로 써요
@@ -24,44 +30,125 @@ await navigator.locks.request('token-refresh', async () => {
   await refreshToken()
 })`
 
+const LEADER_CODE = `// 끝나지 않는 Promise로 자물쇠를 계속 잡고 있으면, 그 탭이 리더예요.
+navigator.locks.request('notification-leader', () => {
+  startPolling() // 리더만 서버에 물어봐요
+  return new Promise(() => {}) // 탭이 닫힐 때까지 놓지 않아요
+})`
+
+const CLEANUP_CODE = `// 다른 탭이 이미 하고 있으면 기다리지 않고 건너뛰어요.
+await navigator.locks.request('cleanup', { ifAvailable: true }, async (lock) => {
+  if (!lock) return
+  await deleteOldCache()
+})`
+
 function Explainer() {
   return (
     <>
-      <ExplainTitle>토큰 갱신이 겹치면 어떻게 되나요?</ExplainTitle>
+      <ExplainTitle>Web Locks는 어떤 문제를 풀어요?</ExplainTitle>
       <Lead>
-        로그인을 오래 유지하는 서비스는 짧게 쓰는 토큰(access token)과, 그걸 다시 받는 데 쓰는 토큰(refresh token)을 함께 써요. refresh token을 한
-        번만 쓸 수 있게 해 둔 서버에서 탭 두 개가 동시에 갱신하면 문제가 생겨요.
+        같은 브라우저, 같은 출처의 탭과 워커가 함께 쓰는 <strong className={strong}>이름 붙은 자물쇠</strong>예요. 탭 하나 안에서는 JavaScript가 한
+        줄씩 실행되지만, 탭이 여러 개면 같은 저장소(localStorage, IndexedDB)와 같은 서버 계정을 진짜로 동시에 건드려요. Web Locks는 "이 일은 한
+        번에 한 탭만" 하게 해요.
       </Lead>
-      <Topic icon="🍪" title="원티드처럼 쿠키로 로그인하면요">
-        <p>
-          세션 갱신도 대부분 서버가 응답 헤더(Set-Cookie)로 처리해서, 이 문제가 잘 생기지 않아요. 브라우저 JavaScript가 갱신 API를 직접 부르고, 서버가
-          refresh token을 한 번만 받아주는 경우에만 생겨요. 이 화면은 그 경우를 흉내 내요.
-        </p>
-      </Topic>
-      <Topic icon="💥" title="자물쇠가 없으면">
+      <Topic icon="🚧" title="예전에는 이렇게 막았어요">
+        <p>localStorage에 "작업 중" 표시를 적고, 표시가 있으면 기다렸어요. 그런데 두 가지가 안 됐어요.</p>
         <ol className={numbered}>
-          <li>탭 A와 탭 B가 동시에 "토큰이 만료됐네" 하고 알아채요.</li>
-          <li>둘 다 같은 refresh token으로 갱신을 요청해요.</li>
-          <li>서버는 먼저 온 A에게 새 토큰을 주고, 이미 쓴 refresh token을 다시 보낸 B는 거절해요.</li>
+          <li>
+            <strong className={strong}>동시에 확인하면 둘 다 통과해요.</strong> 두 탭이 거의 같은 순간 "표시 없네?" 하고 읽으면, 둘 다 표시를 적고
+            둘 다 일해요. HTML 명세에 탭끼리 localStorage를 막는 장치(storage mutex)가 있었지만, 브라우저들이 구현하지 않아서 빠졌어요.
+          </li>
+          <li>
+            <strong className={strong}>잡은 탭이 죽으면 표시가 남아요.</strong> 표시를 적은 탭이 닫히거나 멈추면 아무도 일을 못 해요. 그래서 "10초
+            지나면 무시" 같은 땜질을 덧대야 했어요.
+          </li>
+        </ol>
+      </Topic>
+      <Topic icon="🔐" title="Web Locks는 브라우저가 직접 맡아요">
+        <ul className={bullets}>
+          <li>자물쇠는 한 번에 한 탭만 잡아요. 확인과 잡기가 한 번에 일어나요.</li>
+          <li>잡은 함수가 끝나면 저절로 풀려요.</li>
+          <li>잡은 탭이 닫히거나 멈춰도 저절로 풀려요. 다른 탭이 영원히 기다리지 않아요.</li>
+          <li>기다리는 탭은 줄 선 순서대로 받아요.</li>
+        </ul>
+        <Code code={BASIC_CODE} />
+        <ul className={bullets}>
+          <li>
+            <strong className={strong}>ifAvailable: true</strong> · 누가 잡고 있으면 기다리지 않고 바로 넘어가요. "누가 하고 있으면 나는 안 해도 돼"일
+            때 써요.
+          </li>
+          <li>
+            <strong className={strong}>{"mode: 'shared'"}</strong> · 여러 탭이 같이 잡아요. 읽기는 여럿이, 쓰기는 하나만 할 때 써요.
+          </li>
+          <li>
+            <strong className={strong}>signal</strong> · 기다리기를 그만둬요. AbortSignal.timeout(5000)처럼 시간 제한을 둘 때 써요.
+          </li>
+          <li>
+            <strong className={strong}>locks.query()</strong> · 지금 누가 잡고 있고, 몇 탭이 기다리는지 봐요. 이 화면의 자물쇠 카드가 이걸로 그려요.
+          </li>
+        </ul>
+      </Topic>
+      <Topic icon="🔑" title="쓰는 곳 1 · 토큰 갱신 (이 화면)">
+        <p>
+          로그인을 오래 유지하는 서비스는 짧게 쓰는 토큰(access token)과, 그걸 다시 받는 데 쓰는 토큰(refresh token)을 함께 써요. refresh token을 한
+          번만 받아주는 서버에서 두 탭이 동시에 갱신하면 이렇게 돼요.
+        </p>
+        <ol className={numbered}>
+          <li>탭 A와 탭 B가 동시에 "토큰이 만료됐네" 하고 같은 refresh token으로 갱신을 요청해요.</li>
+          <li>서버는 먼저 온 A에게 새 토큰을 주고, 이미 쓴 refresh token을 보낸 B는 거절해요.</li>
           <li>B는 로그아웃되고, 사용자는 이유를 몰라요.</li>
         </ol>
+        <p>자물쇠를 걸면 먼저 잡은 탭만 갱신하고, 기다리던 탭은 이미 바뀐 토큰을 그대로 써요.</p>
+        <Code code={REFRESH_CODE} />
+        <p>
+          <strong className={strong}>원티드처럼 쿠키로 로그인하면</strong> 세션 갱신도 서버가 응답 헤더(Set-Cookie)로 처리해서 대부분 필요 없어요.
+          브라우저 JavaScript가 갱신 API를 직접 부르고, 서버가 refresh token을 한 번만 받아줄 때만 생겨요. 이 화면은 그 경우를 흉내 내요.
+        </p>
       </Topic>
-      <Topic icon="🔐" title="자물쇠를 걸면">
-        <ol className={numbered}>
-          <li>탭 A가 "token-refresh" 자물쇠를 먼저 잡고 갱신해요.</li>
-          <li>탭 B는 자물쇠가 풀릴 때까지 기다려요.</li>
-          <li>자물쇠를 잡은 B는 토큰이 이미 바뀐 걸 보고, 갱신하지 않고 새 토큰을 그대로 써요.</li>
-        </ol>
-        <Code code={CODE} />
+      <Topic icon="👑" title="쓰는 곳 2 · 한 탭만 서버와 연결하기">
+        <p>
+          탭 10개가 각자 30초마다 알림을 물어보면 서버 요청도 10배예요. 한 탭(리더)만 서버와 연결하고, 받은 걸 BroadcastChannel로 나눠 주면 돼요.
+        </p>
+        <Code code={LEADER_CODE} />
+        <p>
+          리더 탭이 닫히면 자물쇠가 풀리고, 기다리던 다음 탭이 자동으로 리더가 돼요. 살아 있는지 확인하는 신호(하트비트)도, 타임아웃도 필요 없어요.
+          원티드가 탭마다 알림 폴링이나 실시간 연결을 따로 연다면 <strong className={strong}>토큰 갱신보다 이쪽이 더 쓸 만해요.</strong>
+        </p>
       </Topic>
-      <Topic icon="⚖️" title="알아둘 것">
+      <Topic icon="📮" title="쓰는 곳 3 · 한 탭만 하면 되는 일">
         <ul className={bullets}>
-          <li>같은 브라우저, 같은 출처의 탭끼리만 막아요. 다른 기기끼리는 막지 못해요.</li>
-          <li>자물쇠를 잡은 탭이 닫히면 자물쇠는 저절로 풀려요. 다른 탭이 영원히 기다리지 않아요.</li>
           <li>
-            <strong className={strong}>서버가 직전 refresh token을 몇 초 더 받아주면(유예 시간)</strong> 이 문제가 생기지 않아요. 서버에서 먼저 풀 수
-            있는지 확인해요.
+            <strong className={strong}>대기열 비우기:</strong> 보내지 못한 분석 이벤트를 IndexedDB에 모아 뒀다가 보낼 때, 여러 탭이 동시에 비우면 같은
+            이벤트를 두 번 보내요. IndexedDB 트랜잭션은 중간에 await fetch()가 끼면 지켜 주지 못해서, "읽기 → 보내기 → 지우기" 전체를 자물쇠로
+            감싸요.
           </li>
+          <li>
+            <strong className={strong}>정리 작업:</strong> 오래된 캐시 지우기, 저장소 데이터 옮기기처럼 탭마다 할 필요 없는 일은 ifAvailable로
+            건너뛰어요.
+          </li>
+        </ul>
+        <Code code={CLEANUP_CODE} />
+      </Topic>
+      <Topic icon="🙅" title="이럴 땐 안 써도 돼요">
+        <ul className={bullets}>
+          <li>
+            <strong className={strong}>탭 하나 안에서 중복 요청 막기:</strong> 버튼 연타나 같은 API 동시 호출은, 진행 중인 Promise 하나를 같이 쓰면
+            충분해요.
+          </li>
+          <li>
+            <strong className={strong}>다른 기기, 다른 브라우저, 다른 서브도메인 사이:</strong> 자물쇠는 같은 브라우저의 같은 출처 안에서만 통해요. 이건
+            서버가 막아요. 같은 요청을 두 번 받아도 한 번만 처리하는 Idempotency-Key가 그 예예요.
+          </li>
+          <li>
+            <strong className={strong}>서버에서 풀 수 있을 때:</strong> 서버가 직전 refresh token을 몇 초 더 받아주면(유예 시간) 토큰 갱신이 겹치는
+            문제는 생기지 않아요.
+          </li>
+        </ul>
+      </Topic>
+      <Topic icon="⚖️" title="조심할 것">
+        <ul className={bullets}>
+          <li>함수가 끝나지 않으면 다른 탭은 계속 기다려요. 리더처럼 일부러 잡는 게 아니면 signal로 시간 제한을 둬요.</li>
+          <li>자물쇠 두 개를 탭마다 다른 순서로 잡으면 서로를 영원히 기다려요(교착). 한 번에 하나만 잡거나 잡는 순서를 정해요.</li>
         </ul>
       </Topic>
     </>
