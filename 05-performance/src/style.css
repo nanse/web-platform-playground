@@ -3,3 +3,20 @@
 @import '../../shared/ui.css';
 /* shared/의 컴포넌트에 쓴 클래스도 Tailwind가 찾게 해요. */
 @source '../../shared';
+
+/* 이력서 화면의 "인쇄 창으로 저장": 인쇄할 때는 이력서만 보여요. 화면에서는 이력서를 숨겨요. */
+#resume-print {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm 13mm;
+  }
+  body > :not(#resume-print) {
+    display: none !important;
+  }
+  #resume-print {
+    display: block;
+  }
+}
