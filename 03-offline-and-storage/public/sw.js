@@ -54,3 +54,69 @@ function markFromCache(response) {
   headers.set('X-From-Cache', 'true')
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
+
+// ── Background Sync: 끊긴 동안 누른 좋아요를 연결되면 보내요 ──
+// 보낼 좋아요는 IndexedDB(outbox)에 둬요. Service Worker는 언제든 꺼졌다 켜져서, 메모리에 두면 사라져요.
+// 같은 공고는 마지막으로 누른 값 하나만 남아요(keyPath: jobId).
+const SEND_LIKES = 'send-likes'
+
+function outbox(mode, action) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open('offline-lab-outbox', 1)
+    open.onupgradeneeded = () => open.result.createObjectStore('likes', { keyPath: 'jobId' })
+    open.onerror = () => reject(open.error)
+    open.onsuccess = () => {
+      const tx = open.result.transaction('likes', mode)
+      const request = action(tx.objectStore('likes'))
+      tx.oncomplete = () => {
+        open.result.close()
+        resolve(request.result)
+      }
+      tx.onerror = () => reject(tx.error)
+    }
+  })
+}
+
+// 화면이 맡긴 좋아요를 담거나, 담아 둔 목록을 알려줘요.
+self.addEventListener('message', (event) => {
+  const reply = (data) => event.ports[0]?.postMessage(data)
+  const { type, like } = event.data ?? {}
+  if (type === 'queue-like') event.waitUntil(outbox('readwrite', (store) => store.put(like)).then(() => reply({})))
+  if (type === 'outbox') event.waitUntil(outbox('readonly', (store) => store.getAll()).then((likes) => reply({ likes })))
+  // Background Sync가 없는 브라우저(사파리·파이어폭스)는 화면이 연결됐을 때 직접 보내 달라고 해요. 탭이 열려 있을 때만 돼요.
+  if (type === 'flush') event.waitUntil(sendLikes('online 이벤트').catch(() => {}))
+})
+
+// 연결돼 있으면 등록하자마자, 끊겨 있으면 연결될 때 브라우저가 이 Service Worker를 깨워서 보내요. 탭을 닫았어도요.
+self.addEventListener('sync', (event) => {
+  if (event.tag === SEND_LIKES) event.waitUntil(sendLikes(event.lastChance ? 'sync 이벤트(마지막 시도)' : 'sync 이벤트'))
+})
+
+async function sendLikes(by) {
+  const likes = await outbox('readonly', (store) => store.getAll())
+  try {
+    for (const like of likes) {
+      const response = await fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(like),
+      })
+      if (!response.ok) throw new Error(`좋아요를 보내지 못했어요 (${response.status})`)
+      // 보내는 사이 같은 공고를 다시 눌렀다면 새 값이 담겨 있어요. 그건 지우지 않고 다음에 보내요.
+      await outbox('readwrite', (store) => {
+        const request = store.get(like.jobId)
+        request.onsuccess = () => request.result?.likedAt === like.likedAt && store.delete(like.jobId)
+        return request
+      })
+    }
+  } catch (error) {
+    // 오류를 던지면 브라우저가 sync를 실패로 보고, 시간을 두고 다시 보내요.
+    await tell({ type: 'likes-failed', by })
+    throw error
+  }
+  if (likes.length) await tell({ type: 'likes-sent', count: likes.length, by })
+}
+
+async function tell(message) {
+  for (const client of await self.clients.matchAll({ type: 'window' })) client.postMessage(message)
+}

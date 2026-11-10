@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, Button, FeatureSections, Note, Screen, useNav, type Section } from '../../shared/ui'
+import { BackgroundSync } from './background-sync'
 import { IndexedDb } from './indexed-db'
 import { OfflineData } from './offline-data'
 import { Opfs } from './opfs'
@@ -52,6 +53,14 @@ const SECTIONS: Section[] = [
         title: '브라우저 안에 파일 저장하기',
         summary: '큰 파일을 다루는 기능이 없어서 쓸 곳이 없어요',
         supported: 'getDirectory' in (navigator.storage ?? {}),
+      },
+      {
+        id: 'background-sync',
+        icon: '🔄',
+        screen: BackgroundSync,
+        title: '끊긴 동안 누른 좋아요 나중에 보내기',
+        summary: '탭이 열려 있으면 online 이벤트로 충분해요',
+        supported: 'SyncManager' in window,
       },
     ],
   },

@@ -12,7 +12,7 @@ web-platform-playground/
 ├── 01-install-and-launch/   # https://localhost:5101  PWA, Web Install, WCO, Window Management, File/Protocol/Launch/Share, Badging
 ├── 01-isolated-web-app/     # https://localhost:5111  Isolated Web Apps, Direct Sockets
 ├── 02-smooth-ui/            # https://localhost:5102  View Transitions, Popover, Anchor Positioning
-├── 03-offline-and-storage/  # https://localhost:5103  Service Worker, OPFS, IndexedDB
+├── 03-offline-and-storage/  # https://localhost:5103  Service Worker, OPFS, IndexedDB, Background Sync
 ├── 04-multi-tab/            # https://localhost:5104  Web Locks, BroadcastChannel
 ├── 05-performance/          # https://localhost:5105  LCP·INP·CLS, bfcache, Speculation Rules
 ├── 05-performance-next.js/  # http://localhost:5115   Next.js에서 bfcache, 스크롤 위치, 좋아요 낙관적 업데이트

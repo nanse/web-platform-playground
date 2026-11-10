@@ -4,12 +4,12 @@ import { Button, Card, Note, Result, Screen, useNav } from '../../shared/ui'
 import { Report } from './report'
 import { OnlineStatus, Steps, useOnline } from './service-worker'
 
-type Job = { id: number; title: string; company: string }
+export type Job = { id: number; title: string; company: string }
 type Loaded = { jobs: Job[]; receivedAt: Date; fromCache: boolean }
 type Status = 'idle' | 'loading' | 'fresh' | 'cached' | 'empty'
 
 /** Service Worker가 이 페이지를 맡을 때까지 기다려요. 맡기 전에 보낸 fetch는 Service Worker를 거치지 않아서 담기지 않아요. */
-async function ensureWorker() {
+export async function ensureWorker() {
   await navigator.serviceWorker.register('/sw.js')
   await navigator.serviceWorker.ready
   if (navigator.serviceWorker.controller) return
@@ -128,8 +128,8 @@ function Explainer() {
             <strong className={strong}>오류 응답:</strong> 404나 500을 담으면 멀쩡하게 담아 둔 응답을 덮어써요. response.ok일 때만 담아요.
           </li>
           <li>
-            <strong className={strong}>보내는 요청(POST):</strong> 지원하기, 저장하기는 담을 수 없어요. 끊긴 동안 보낸 요청을 나중에 보내주는
-            Background Sync는 크롬 계열에서만 돼요. 보통은 연결된 뒤 다시 보내게 안내해요.
+            <strong className={strong}>보내는 요청(POST):</strong> 지원하기, 저장하기는 담을 수 없어요. 끊긴 동안 누른 걸 나중에 보내는 방법은
+            &apos;끊긴 동안 누른 좋아요 나중에 보내기&apos;(Background Sync)에서 해 봐요.
           </li>
         </ul>
       </Topic>

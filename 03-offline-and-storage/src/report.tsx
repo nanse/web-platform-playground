@@ -35,15 +35,27 @@ const TECHS = {
       ['web.dev · 오프라인 쿡북 (전략별 코드)', 'https://web.dev/articles/offline-cookbook'],
       ['Chrome · Workbox 캐싱 전략', 'https://developer.chrome.com/docs/workbox/caching-strategies-overview'],
       ['MDN · Cache', 'https://developer.mozilla.org/docs/Web/API/Cache'],
-      ['MDN · Background Synchronization API', 'https://developer.mozilla.org/docs/Web/API/Background_Synchronization_API'],
       ['TanStack Query · persistQueryClient', 'https://tanstack.com/query/latest/docs/framework/react/plugins/persistQueryClient'],
     ],
     support: [
       ['Service Worker', '40+', '40+', '11.1+', '11.3+', '44+'],
       ['Cache Storage', '43+', '43+', '11.1+', '11.3+', '41+'],
-      ['끊긴 동안 보낸 요청 나중에 보내기 (Background Sync)', '49+', '49+', '❌', '❌', '❌'],
     ],
-    supportNote: 'Background Sync는 크롬 계열에서만 돼요. 사파리와 파이어폭스에서는 연결된 뒤 다시 보내게 안내해요.',
+  },
+  'background-sync': {
+    name: 'Background Sync',
+    verdict: 'no',
+    verdictLabel: '필요 없어요',
+    reason:
+      '끊긴 동안 누른 좋아요나 관심 공고 저장을 연결되면 보내 줘요. 그런데 탭이 열려 있다면 online 이벤트로 다시 보내도 결과가 같아요. Background Sync만 할 수 있는 건 탭을 닫은 뒤에 보내는 것인데, 크롬 계열에서만 돼요. 지원하기처럼 결과를 바로 알아야 하는 행동에는 맞지 않아요.',
+    revisit: 'PWA로 앱처럼 쓰는 사용자가 많아지고, 끊긴 곳에서 누른 좋아요나 저장이 사라진다는 문의가 숫자로 보일 때 다시 봐요.',
+    docs: [
+      ['MDN · Background Synchronization API', 'https://developer.mozilla.org/docs/Web/API/Background_Synchronization_API'],
+      ['WICG · Background Sync 명세', 'https://wicg.github.io/background-sync/spec/'],
+      ['Chrome · Workbox Background Sync', 'https://developer.chrome.com/docs/workbox/modules/workbox-background-sync'],
+    ],
+    support: [['끊긴 동안 보낸 요청 나중에 보내기 (Background Sync)', '49+', '49+', '❌', '❌', '❌']],
+    supportNote: '사파리와 파이어폭스에는 없어요. 탭이 열린 채 연결되면(online 이벤트) 화면이 대신 보내요.',
   },
   'indexed-db': {
     name: 'IndexedDB',

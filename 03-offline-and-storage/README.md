@@ -1,6 +1,6 @@
 # 03 · Offline & Storage
 
-Service Worker, IndexedDB, OPFS로 "인터넷이 끊겨도 열리고, 창을 닫아도 남는" 화면을 만들어 봐요.
+Service Worker, IndexedDB, OPFS, Background Sync로 "인터넷이 끊겨도 열리고, 창을 닫아도 남는" 화면을 만들어 봐요.
 
 ```sh
 pnpm --filter 03-offline-and-storage dev   # https://localhost:5103
@@ -13,6 +13,7 @@ pnpm --filter 03-offline-and-storage dev   # https://localhost:5103
 - **fetch로 받는 데이터는 공개 데이터만 담아요.** 끊겼을 때 마지막 공고 목록을 보여줄 수 있어요. 내 지원 현황 같은 개인 데이터는 담으면 안 돼요.
 - **IndexedDB는 localStorage로 부족할 때 써요.** 이력서 초안처럼 서버에 보내기 전 데이터를 잃지 않게 붙잡아 둘 때예요.
 - **OPFS는 필요 없어요.** 원티드에는 큰 파일을 브라우저 안에서 다루는 기능이 없어요.
+- **Background Sync도 필요 없어요.** 탭이 열려 있다면 `online` 이벤트로 다시 보내도 결과가 같아요. 탭을 닫은 뒤에도 보내는 건 크롬 계열에서만 돼요.
 
 ## 한눈에 보기
 
@@ -22,6 +23,7 @@ pnpm --filter 03-offline-and-storage dev   # https://localhost:5103
 | Service Worker로 API 응답 담기 | ➕ PWA를 하면 공개 데이터만 담아요 | 끊겼을 때 마지막 공고 목록을 보여줘요. 개인 데이터는 담으면 안 돼요 |
 | IndexedDB | ➕ localStorage로 부족할 때 써요 | 객체와 파일을 크게 담을 수 있어서, 잃으면 안 되는 초안에 맞아요 |
 | OPFS | ❌ 필요 없어요 | 이력서와 포트폴리오는 서버에 올려야 의미가 있어요 |
+| Background Sync | ❌ 필요 없어요 | 탭이 열려 있으면 `online` 이벤트로 충분해요. 크롬 계열에서만 돼요 |
 
 ## 어디서 동작하나요?
 
@@ -39,7 +41,7 @@ pnpm --filter 03-offline-and-storage dev   # https://localhost:5103
 | 메인 스레드에서 쓰기 (`createWritable`) | 86+ | 109+ | 26+ | 26+ | 111+ |
 | 워커에서 빠르게 쓰기 (`createSyncAccessHandle`) | 102+ | 109+ | 15.2+ | 15.2+ | 111+ |
 
-- Background Sync는 크롬 계열에서만 돼요. 사파리와 파이어폭스에서는 연결된 뒤 다시 보내게 안내해요.
+- Background Sync는 크롬 계열에서만 돼요. 사파리와 파이어폭스는 탭이 열린 채 연결되면(`online` 이벤트) 화면이 대신 보내요.
 - 사파리는 26 전까지 메인 스레드에서 OPFS 파일을 쓸 수 없어서, 워커에서 `createSyncAccessHandle`로 써야 했어요.
 - 사파리는 7일 동안 방문하지 않은 사이트의 저장 데이터를 지울 수 있어요([WebKit 블로그](https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/)).
 
@@ -53,8 +55,9 @@ pnpm --filter 03-offline-and-storage dev   # https://localhost:5103
 | API 응답 담기 | `public/sw.js`, `src/offline-data.tsx`, `public/api/jobs.json` | 끊겨도 받아 둔 공고 보여주기 → "공고 불러오기" → "Offline"을 켜고 다시 "공고 불러오기" → "Offline"을 끄면 알아서 새로 불러와요 |
 | IndexedDB | `src/indexed-db.tsx` | 관심 공고 브라우저에 담기 → "관심 공고 하나 담기" → 새로고침해도 남아 있는지 확인 |
 | OPFS | `src/opfs.tsx` | 브라우저 안에 파일 저장하기 → 메모를 고치고 "OPFS에 저장하기" → 새로고침해도 불러오는지 확인 |
+| Background Sync | `public/sw.js`, `src/background-sync.tsx`, `vite.config.ts` | 끊긴 동안 누른 좋아요 나중에 보내기 → DevTools Application → Service Workers에서 "Offline"을 켜고 좋아요 → 탭을 닫았다가 다시 열기 → 서버가 받은 시각이 누른 시각보다 늦어요 |
 
-처음 상태로 되돌리려면 DevTools → Application → Storage에서 "Clear site data"를 눌러요. Service Worker, 담아 둔 파일, IndexedDB, OPFS가 함께 지워져요.
+처음 상태로 되돌리려면 DevTools → Application → Storage에서 "Clear site data"를 눌러요. Service Worker, 담아 둔 파일, IndexedDB, OPFS가 함께 지워져요. 서버가 받은 좋아요는 dev 서버를 다시 켜면 지워져요.
 
 ## 기술별로 자세히
 
@@ -137,7 +140,7 @@ const receivedAt = new Date(response.headers.get('Date'))
 
 - **개인 데이터:** 내 지원 현황, 이력서, 프로필이에요. Cache Storage는 `Cache-Control: no-store`를 보지 않아서, 코드가 담으면 그대로 남아요. 로그아웃한 뒤에도, 같은 PC를 쓰는 다른 사람에게도 보일 수 있어요. 그래서 담을 주소를 목록(`PUBLIC_DATA`)으로 정해요.
 - **오류 응답:** 404나 500을 담으면 멀쩡하게 담아 둔 응답을 덮어써요. `response.ok`일 때만 담아요.
-- **보내는 요청(POST):** 지원하기, 저장하기는 담을 수 없어요. 끊긴 동안 보낸 요청을 나중에 보내주는 Background Sync는 크롬 계열에서만 돼요. 보통은 연결된 뒤 다시 보내게 안내해요.
+- **보내는 요청(POST):** 지원하기, 저장하기는 담을 수 없어요. 끊긴 동안 누른 걸 나중에 보내는 방법은 아래 Background Sync에서 해 봐요.
 
 **TanStack Query 캐시와는 뭐가 달라요?**
 
@@ -158,6 +161,37 @@ const receivedAt = new Date(response.headers.get('Date'))
 - **문서:** [MDN · Origin private file system](https://developer.mozilla.org/docs/Web/API/File_System_API/Origin_private_file_system) · [web.dev · OPFS](https://web.dev/articles/origin-private-file-system)
 - **필요 없는 이유:** OPFS는 사진·영상 편집기나 브라우저 안 SQLite처럼, 큰 파일을 브라우저 안에서 빠르게 읽고 쓰는 용도예요. 원티드가 다루는 이력서와 포트폴리오는 서버에 올려야 의미가 있어서, 브라우저에만 두는 파일은 쓸 곳이 없어요.
 - **다시 볼 때:** 브라우저 안에서 큰 데이터를 직접 다뤄야 할 때 다시 봐요. 예를 들어 SQLite(WASM)로 오프라인 검색을 만드는 경우예요.
+
+### Background Sync · ❌ 필요 없어요
+
+- **무엇인가요:** 보낼 요청을 담아 뒀다가 연결되면 보내는 기능이에요. 화면이 `registration.sync.register('send-likes')`로 등록하면, 브라우저가 연결될 때 Service Worker를 깨워 `sync` 이벤트를 줘요. 탭을 닫았어도요.
+- **문서:** [MDN · Background Synchronization API](https://developer.mozilla.org/docs/Web/API/Background_Synchronization_API) · [WICG · Background Sync 명세](https://wicg.github.io/background-sync/spec/) · [Chrome · Workbox Background Sync](https://developer.chrome.com/docs/workbox/modules/workbox-background-sync)
+- **필요 없는 이유:** 끊긴 동안 누른 좋아요나 관심 공고 저장을 연결되면 보내 줘요. 그런데 탭이 열려 있다면 `online` 이벤트로 다시 보내도 결과가 같아요. Background Sync만 할 수 있는 건 탭을 닫은 뒤에 보내는 것인데, 크롬 계열에서만 돼요. 지원하기처럼 결과를 바로 알아야 하는 행동에는 맞지 않아요.
+- **다시 볼 때:** PWA로 앱처럼 쓰는 사용자가 많아지고, 끊긴 곳에서 누른 좋아요나 저장이 사라진다는 문의가 숫자로 보일 때 다시 봐요.
+
+#### 좋아요 하나가 이렇게 흘러가요
+
+1. 하트는 서버 답을 기다리지 않고 바로 켜요.
+2. 보낼 좋아요를 Service Worker에 맡기면 IndexedDB(outbox)에 담아요. Service Worker는 언제든 꺼졌다 켜져서 메모리에 두면 사라져요.
+3. `sync.register('send-likes')`로 "연결되면 깨워 줘"라고 등록해요. 연결돼 있으면 바로 깨워요.
+4. Service Worker가 `sync` 이벤트를 받아 outbox를 `/api/likes`로 보내고, 보낸 것은 지워요.
+5. 보내다 실패하면 오류를 던져요. 브라우저가 시간을 두고 다시 `sync`를 줘요. 마지막 시도에는 `event.lastChance`가 `true`예요.
+
+크롬 157에서 확인했어요.
+
+| 해 본 것 | 서버가 받은 때 |
+| --- | --- |
+| 온라인에서 좋아요 | 누른 그 초에 받았어요 |
+| Service Worker를 오프라인으로 두고 좋아요 | 받지 않았어요. 화면에 "보낼 차례를 기다려요"가 붙어요 |
+| 그대로 탭을 닫고 DevTools 연결이 끊기며 온라인이 됨 | 탭 없이 7초 뒤에 받았어요. 다시 열면 누른 시각과 받은 시각이 나란히 보여요 |
+
+**이건 꼭 챙겨요**
+
+- 같은 공고를 여러 번 누르면 마지막 값 하나만 보내요. outbox의 키를 공고 번호로 둬서 덮어써요.
+- 보내는 사이 다시 누른 값은 지우지 않아요. 누른 시각이 같을 때만 outbox에서 지워요.
+- 로그아웃하면 outbox를 비워요. 보낼 때의 쿠키로 보내져서, 그대로 두면 다음에 로그인한 사람 계정으로 좋아요가 갈 수 있어요.
+- 사파리와 파이어폭스에는 `sync`가 없어요. 탭이 열린 채 연결되면 화면이 대신 보내 달라고 해요. 탭을 닫으면 다음에 열 때 보내요.
+- 받는 쪽은 `vite.config.ts`의 작은 `/api/likes`예요. dev와 preview 서버에서 동작하고, 서버 메모리에 둬서 서버를 다시 켜면 사라져요.
 
 ## 알아두면 좋은 것
 
