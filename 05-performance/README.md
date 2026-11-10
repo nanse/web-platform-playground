@@ -126,11 +126,30 @@ pnpm --filter 05-performance dev
 이런 게 있으면 얼려 두지 못해요.
 
 - **`unload` 이벤트**: 쓰지 않아요. 떠날 때 할 일은 `pagehide`로 옮겨요.
-- **`Cache-Control: no-store`**: 로그인한 페이지에 자주 붙어요. 이 헤더가 있으면 얼려 두지 않을 수 있어요.
+- **`Cache-Control: no-store`**: 로그인한 페이지와 Next.js가 SSR한 페이지에 붙어요. 크롬은 그래도 얼려 두지만, 떠난 사이 쿠키가 바뀌면(로그인·로그아웃) 버리고 다시 불러와요. 다른 브라우저는 얼려 두지 않을 수 있어요.
 - **열려 있는 연결**: WebSocket·WebRTC, 진행 중인 `fetch`나 IndexedDB 작업이 있으면 브라우저에 따라 얼려 두지 않아요.
 - **`window.opener`**: 다른 창이 이 페이지를 붙잡고 있으면 안전하게 얼릴 수 없어요.
 
 크롬은 막힌 이유를 `notRestoredReasons`로 알려줘요. DevTools → Application → Back/forward cache에서 직접 시험해 볼 수도 있어요.
+
+### Next.js에서는 문서가 바뀔 때만 일해요
+
+따로 짤 코드는 없어요. 공고 목록은 브라우저에서 API로 받고(`useEffect`), 공고 상세는 서버에서 그리는(SSR) Next.js 16 앱을 만들어 `build` 후 `start`로 띄우고 크롬 157에서 돌려 봤어요.
+
+| 이렇게 움직이면 | bfcache | 돌아왔을 때 |
+| --- | --- | --- |
+| 목록 → `<Link>`로 상세 → 뒤로 | 아니에요 | 문서가 그대로라 Next.js가 목록을 다시 그려요. '불러오는 중'이 보이고 API를 다시 불러요. 그동안 페이지가 짧아져서 보던 스크롤 위치도 잃어요 |
+| 목록 → 외부 페이지 → 뒤로 | ✅ | 받아 둔 목록이 그대로예요. API를 다시 부르지 않아요 |
+| 상세로 바로 들어옴 → 외부 페이지 → 뒤로 | ✅ | 서버에서 그린 화면이 그대로예요. `no-store`가 붙어 있어도 꺼내요 |
+| 위와 같은데 떠난 사이 쿠키가 바뀜 | ❌ | 다시 불러와요. 로그아웃한 뒤 뒤로 가기로 개인정보가 보이지 않아요 |
+| `next dev`에서 목록 → 외부 페이지 → 뒤로 | ❌ | 개발 서버가 붙이는 `no-store`와 WebSocket 연결 때문에 다시 불러와요 |
+
+- Next.js는 동적으로 SSR한 페이지에 `Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate`를 붙여요. 크롬은 이 헤더가 있어도 쿠키가 그대로면 얼려 둬요.
+- 앱 안에서 뒤로 갈 때 목록을 보던 자리 그대로 보여주고 싶다면 bfcache가 아니라 받아 둔 데이터로 바로 그리면 돼요. TanStack Query에 `staleTime`과 `gcTime`을 주니 '불러오는 중' 없이 그려져서, 크롬이 스크롤 위치까지 되돌려 놨어요. API도 다시 부르지 않았어요.
+- Next.js 16의 `cacheComponents`도 상세에 있는 동안 목록을 지우지 않고 숨겨 뒀다가, 돌아오면 '불러오는 중' 없이 바로 보여줬어요. 다만 `useEffect`가 다시 돌아서 API는 한 번 더 불러요.
+- 얼려 둔 화면은 떠날 때 값 그대로예요. 낙관적 업데이트로 켠 좋아요도 남지만, 떠난 사이 다른 탭에서 바뀐 값은 몰라요. `pageshow`의 `persisted`가 `true`일 때 그런 값만 다시 받아요.
+- 사파리와 파이어폭스는 확인하지 않았어요.
+- 직접 보려면 [`05-performance-next.js`](../05-performance-next.js)를 빌드해서 띄워요.
 
 ## Speculation Rules를 쉽게 말하면
 
@@ -460,7 +479,7 @@ Apple M3 Pro 맥, 크롬 헤드리스에서 같은 이력서로 재 봤어요.
 - **무엇인가요:** 뒤로·앞으로 갈 때 얼려 둔 페이지를 그대로 꺼내는 브라우저 기능이에요. `pageshow` 이벤트의 `persisted`가 `true`면 bfcache로 돌아온 거예요.
 - **문서:** [web.dev · bfcache](https://web.dev/articles/bfcache) · [Chrome for Developers · notRestoredReasons](https://developer.chrome.com/docs/web-platform/bfcache-notrestoredreasons) · [MDN · pageshow 이벤트](https://developer.mozilla.org/docs/Web/API/Window/pageshow_event) · [MDN · notRestoredReasons](https://developer.mozilla.org/docs/Web/API/PerformanceNavigationTiming/notRestoredReasons)
 - **기대할 수 있는 것:** 회사 홈페이지나 외부 지원 페이지로 나갔다가 뒤로 돌아올 때, 공고 화면이 기다림 없이 그대로 나와요. 뒤로·앞으로 이동이 생각보다 많아서, 막는 원인만 없애도 효과가 커요.
-- **한계:** Next.js 안에서 화면을 오가는 건 문서가 그대로라 bfcache와 상관없어요. 로그인한 페이지에 자주 붙는 `Cache-Control: no-store`를 걷어내려면, 뒤로 가기로 개인정보가 다시 보여도 괜찮은지 먼저 따져야 해요. 막힌 이유를 알려주는 `notRestoredReasons`는 크롬 계열에서만 돼요.
+- **한계:** Next.js 안에서 `<Link>`로 화면을 오가는 건 문서가 그대로라 bfcache와 상관없어요. 외부 페이지로 나갔다가 돌아올 때만 일해요. 크롬은 `Cache-Control: no-store`가 붙은 페이지(로그인한 페이지, Next.js가 SSR한 페이지)도 얼려 두고, 떠난 사이 쿠키가 바뀌면 다시 불러와요. 다른 브라우저까지 노리고 `no-store`를 걷어내려면, 뒤로 가기로 개인정보가 다시 보여도 괜찮은지 먼저 따져야 해요. `next dev`에서는 얼려 두지 않아서 `build` 후 `start`로 확인해요. 막힌 이유를 알려주는 `notRestoredReasons`는 크롬 계열에서만 돼요.
 - **이렇게 확인해요:** `notRestoredReasons`를 모아서 가장 많이 나온 원인부터 없애고, `pageshow`의 `persisted`로 bfcache로 돌아온 비율이 늘었는지 봐요.
 
 ### Speculation Rules · ❌ Next.js 화면 이동에는 필요 없어요

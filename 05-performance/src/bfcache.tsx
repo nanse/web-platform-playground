@@ -43,7 +43,8 @@ function Explainer() {
             <strong className={strong}>unload 이벤트</strong>: 쓰지 않아요. 떠날 때 할 일은 pagehide로 옮겨요.
           </li>
           <li>
-            <strong className={strong}>Cache-Control: no-store</strong>: 로그인한 페이지에 자주 붙어요. 이 헤더가 있으면 얼려 두지 않을 수 있어요.
+            <strong className={strong}>Cache-Control: no-store</strong>: 로그인한 페이지와 Next.js가 SSR한 페이지에 붙어요. 크롬은 그래도 얼려 두지만, 떠난
+            사이 쿠키가 바뀌면(로그인·로그아웃) 버리고 다시 불러와요. 다른 브라우저는 얼려 두지 않을 수 있어요.
           </li>
           <li>
             <strong className={strong}>열려 있는 연결</strong>: WebSocket·WebRTC, 진행 중인 fetch나 IndexedDB 작업이 있으면 브라우저에 따라 얼려 두지 않아요.
@@ -53,6 +54,26 @@ function Explainer() {
           </li>
         </ul>
         <p>크롬은 막힌 이유를 notRestoredReasons로 알려줘요. 이 화면도 다시 불러와졌다면 그 이유를 보여줘요.</p>
+      </Topic>
+      <Topic icon="🧭" title="Next.js에서는 문서가 바뀔 때만 일해요">
+        <p>따로 짤 코드는 없어요. 브라우저에서 API로 받는 공고 목록과 서버에서 그리는(SSR) 공고 상세를 만들어 크롬 157에서 돌려 봤어요.</p>
+        <ul className={bullets}>
+          <li>
+            <strong className={strong}>목록 → Link로 상세 → 뒤로</strong>: 문서가 그대로라 bfcache가 아니에요. 목록을 처음부터 다시 그려서 '불러오는
+            중'이 보이고 API도 다시 불러요. 그동안 페이지가 짧아져서 보던 스크롤 위치도 잃어요.
+          </li>
+          <li>
+            <strong className={strong}>목록이나 상세 → 외부 페이지 → 뒤로</strong>: bfcache로 꺼내요. 받아 둔 목록도, 서버에서 그린 상세도 그대로라 API도
+            SSR도 다시 하지 않아요.
+          </li>
+          <li>
+            <strong className={strong}>next dev</strong>: 개발 서버가 붙이는 no-store와 WebSocket 연결 때문에 얼려 두지 않아요. build 후 start로 확인해요.
+          </li>
+        </ul>
+        <p>
+          앱 안에서 뒤로 갈 때 보던 자리 그대로 보여주고 싶다면 bfcache가 아니라 받아 둔 데이터로 바로 그리면 돼요. TanStack Query에 staleTime과
+          gcTime을 주니 '불러오는 중' 없이 그려져서, 크롬이 스크롤 위치까지 되돌려 놨어요.
+        </p>
       </Topic>
     </>
   )

@@ -34,7 +34,7 @@ const TECHS = {
     reason:
       '회사 홈페이지나 외부 지원 페이지로 나갔다가 뒤로 돌아올 때, 공고 화면이 기다림 없이 그대로 나와요. 크롬 기준으로 데스크톱 이동 10번 중 1번, 모바일 5번 중 1번이 뒤로·앞으로 이동이라, 막는 원인만 없애도 효과가 커요. 따로 만들 기능은 없어요.',
     limit:
-      'Next.js 안에서 화면을 오가는 건 문서가 그대로라 bfcache와 상관없어요. 로그인한 페이지에 자주 붙는 Cache-Control: no-store를 걷어내려면, 뒤로 가기로 개인정보가 다시 보여도 괜찮은지 먼저 따져야 해요. 막힌 이유를 알려주는 notRestoredReasons는 크롬 계열에서만 돼요.',
+      'Next.js 안에서 <Link>로 화면을 오가는 건 문서가 그대로라 bfcache와 상관없어요. 외부 페이지로 나갔다가 돌아올 때만 일해요. 크롬은 Cache-Control: no-store가 붙은 페이지(로그인한 페이지, Next.js가 SSR한 페이지)도 얼려 두고, 떠난 사이 쿠키가 바뀌면 다시 불러와요. 다른 브라우저까지 노리고 no-store를 걷어내려면, 뒤로 가기로 개인정보가 다시 보여도 괜찮은지 먼저 따져야 해요. next dev에서는 얼려 두지 않아서 build 후 start로 확인해요. 막힌 이유를 알려주는 notRestoredReasons는 크롬 계열에서만 돼요.',
     measure: 'notRestoredReasons를 모아서 가장 많이 나온 원인부터 없애고, pageshow의 persisted로 bfcache로 돌아온 비율이 늘었는지 봐요.',
     docs: [
       ['web.dev · bfcache', 'https://web.dev/articles/bfcache'],
