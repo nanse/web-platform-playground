@@ -52,6 +52,26 @@ const TECHS = {
     support: [['Badging', '81+', '❌', '17+', '16.4+', '❌']],
     supportNote: 'Linux에서는 동작하지 않아요. iOS는 홈 화면에 추가한 앱에서 알림 권한을 허용해야 보여요.',
   },
+  'web-share': {
+    name: 'Web Share',
+    verdict: 'try',
+    verdictLabel: '공고 공유에서 해볼 만해요',
+    reason:
+      '공유 버튼을 누르면 기기의 공유 창이 떠서, 카카오톡·메시지·메일 중 늘 쓰는 앱으로 바로 보내요. 앱마다 공유 버튼을 따로 만들지 않아도 되고, 설치하지 않은 브라우저 탭에서도 동작해서 앱 없이 링크로 들어온 구직자에게도 닿아요.',
+    limit:
+      '파이어폭스 데스크톱에는 공유 창이 없어서 링크 복사를 같이 둬야 해요. 페이지는 사용자가 공유 창을 닫았는지만 알고, 어느 앱을 골랐는지나 실제로 보냈는지는 몰라요.',
+    measure: '공유 링크에 utm을 붙여서, 공유로 들어온 방문과 그 방문의 지원 수를 봐요. 공유 창을 닫은 비율(AbortError)도 같이 봐요.',
+    docs: [
+      ['MDN · Web Share API', 'https://developer.mozilla.org/docs/Web/API/Web_Share_API'],
+      ['MDN · navigator.share()', 'https://developer.mozilla.org/docs/Web/API/Navigator/share'],
+      ['web.dev · Web Share API', 'https://web.dev/articles/web-share'],
+    ],
+    support: [
+      ['Web Share', '128+', '61+', '12.1+', '12.2+', '❌'],
+      ['이미지 같이 보내기(files)', '128+', '76+', '14+', '14+', '❌'],
+    ],
+    supportNote: '크롬은 89부터 Windows·ChromeOS에서 먼저 됐고, 128부터 macOS도 돼요. 파이어폭스는 안드로이드(79+)에서만 돼요.',
+  },
   'launch-handler': {
     name: 'Launch Handler',
     verdict: 'with',

@@ -1,6 +1,7 @@
 # 01 · Install & Launch
 
 기술 지도 "1. 앱처럼 설치하고 실행하기"의 샘플이에요. 모두 manifest에 선언하는 "설치된 앱의 능력"이라서 PWA 하나에 함께 담았어요.
+Web Share는 설치 없이 동작하지만, 공유로 받는 Share Target과 짝이라서 여기에 함께 담았어요.
 Isolated Web Apps와 Direct Sockets는 실행 조건이 달라서 [`../01-isolated-web-app`](../01-isolated-web-app)에 따로 있어요.
 
 ```sh
@@ -9,8 +10,9 @@ pnpm --filter 01-install-and-launch dev   # https://localhost:5101
 
 ## 결론부터 말할게요
 
-- **원티드에서 해볼 만한 건 하나예요.** 기업 대시보드를 데스크톱 앱으로 설치할 수 있게 하고, 확인할 지원자 수를 앱 아이콘 배지로 보여주는 거예요.
-- **구직자 쪽은 필요 없어요.** 모바일에는 이미 네이티브 앱이 있고 같은 일을 더 잘해요. 구직은 몇 주 집중하고 끝나는 일이라 데스크톱에 앱을 설치해 둘 이유도 약해요.
+- **원티드에서 해볼 만한 건 두 가지예요.** 기업 대시보드를 데스크톱 앱으로 설치할 수 있게 하고, 확인할 지원자 수를 앱 아이콘 배지로 보여주는 거예요.
+  그리고 공고 공유 버튼에서 기기의 공유 창을 띄우는 거예요. 이건 설치 없이 동작해요.
+- **구직자 쪽에 설치는 필요 없어요.** 모바일에는 이미 네이티브 앱이 있고 같은 일을 더 잘해요. 구직은 몇 주 집중하고 끝나는 일이라 데스크톱에 앱을 설치해 둘 이유도 약해요.
 - **나머지 기술은 지금은 필요 없어요.** 대부분 크롬·엣지 데스크톱에서만, 그것도 앱을 설치한 사람에게만 동작해서 닿는 사용자가 적어요.
 - 원티드 홈페이지(wanted.co.kr) HTML에는 아직 manifest가 없어서, 지금은 설치할 수 있는 PWA가 아니에요(2026-11-05 확인). 무엇을 하든 PWA 기본기가 먼저예요.
 
@@ -20,6 +22,7 @@ pnpm --filter 01-install-and-launch dev   # https://localhost:5101
 | --- | --- | --- |
 | PWA 기본기 | ✅ 기업 대시보드에서 해볼 만해요 | 매일 여는 업무 도구라 Dock·작업 표시줄에 둘 의미가 있어요 |
 | Badging | ✅ PWA와 함께 해볼 만해요 | 창을 열지 않아도 확인할 지원자가 있는지 알 수 있어요 |
+| Web Share | ✅ 공고 공유에서 해볼 만해요 | 설치 없이 기기의 공유 창을 띄워, 늘 쓰는 메신저로 바로 보내요 |
 | Launch Handler | ➕ PWA를 하면 같이 넣어요 | manifest 한 줄이라 비용이 거의 없어요. 혼자서는 효과가 작아요 |
 | Web Install API, `<install>` | ❌ 필요 없어요 | 아직 플래그를 켜야 동작하고, 앱 하나를 설치하는 건 기본기로 충분해요 |
 | Window Controls Overlay, `window-drag` | ❌ 필요 없어요 | 타이틀바 자리를 쓰는 꾸밈이에요. 지원자 확인을 빠르게 해주지 않아요 |
@@ -45,12 +48,15 @@ pnpm --filter 01-install-and-launch dev   # https://localhost:5101
 | Launch Handler | 110+ | 110+ | ❌ | ❌ | ❌ |
 | Share Target | 89+ | 76+ | ❌ | ❌ | ❌ |
 | Badging | 81+ | ❌ | 17+ | 16.4+ | ❌ |
+| Web Share | 128+ | 61+ | 12.1+ | 12.2+ | ❌ |
+| 이미지 같이 보내기(`files`) | 128+ | 76+ | 14+ | 14+ | ❌ |
 
 - 🟡 설치 버튼 없이 사용자가 공유 메뉴에서 직접 설치해요. macOS는 "Dock에 추가", iOS는 "홈 화면에 추가"예요.
 - 🚩 chrome://flags에서 켜야 동작해요. `<install>`은 크롬·엣지 148~153에서 origin trial을 했어요.
 - — API는 있지만 화면이 대부분 하나라 쓸 일이 거의 없어요.
 - Badging은 Linux에서 동작하지 않아요. iOS는 홈 화면에 추가한 앱에서 알림 권한을 허용해야 보여요.
 - 파이어폭스는 Windows에서 비슷한 기능(Taskbar Tabs)을 시험하고 있어요.
+- Web Share는 크롬 89부터 Windows·ChromeOS에서 먼저 됐고, 128부터 macOS도 돼요. 파이어폭스는 안드로이드(79+)에서만 돼요.
 
 ## 직접 해보기
 
@@ -67,6 +73,7 @@ pnpm --filter 01-install-and-launch dev   # https://localhost:5101
 | Launch Handler | manifest `launch_handler` | 앱 창을 연 채로 위 두 가지 해보기 → 새 창이 열리지 않고 기존 창에 기록이 쌓여요 |
 | Share Target | manifest `share_target` | 안드로이드에 설치하면 공유 목록에 나와요. 실기기에서 띄우는 방법은 아직 준비 중이에요 |
 | Badging | `src/badging.tsx` | 앱 아이콘에 숫자 띄우기 → "배지 +1" 클릭 → Dock이나 작업 표시줄 아이콘에서 확인 |
+| Web Share | `src/web-share.tsx` | 공고 공유하기 → "공고 공유하기" 클릭 → 공유 창에서 앱 고르기. 설치하지 않은 탭에서도 돼요 |
 
 ## 기술별로 자세히
 
@@ -85,6 +92,29 @@ pnpm --filter 01-install-and-launch dev   # https://localhost:5101
 - **기대할 수 있는 것:** 메신저 앱처럼 대시보드 아이콘에 "확인하지 않은 지원자 3"을 띄울 수 있어요. 창을 열지 않아도 할 일이 있는지 알 수 있어요.
 - **한계:** 앱이 닫혀 있을 때 숫자를 바꾸려면 Web Push가 필요해요. 푸시 없이 하면 창이 열려 있을 때만 바뀌어요. 숫자는 "지금 해야 할 일"만 세야 해요. 아무 알림이나 세면 금방 무시돼요.
 - **이렇게 확인해요:** 배지를 쓰는 담당자와 쓰지 않는 담당자가 지원서를 처음 열어보기까지 걸린 시간을 비교해요.
+
+### Web Share · ✅ 공고 공유에서 해볼 만해요
+
+- **무엇인가요:** 기기의 공유 창을 띄워서, 사용자가 고른 앱으로 제목·내용·링크(지원하면 파일도)를 넘겨요. `navigator.share({ title, text, url })`처럼 써요. 공유로 받는 쪽은 Share Target이에요.
+- **문서:** [MDN · Web Share API](https://developer.mozilla.org/docs/Web/API/Web_Share_API) · [MDN · navigator.share()](https://developer.mozilla.org/docs/Web/API/Navigator/share) · [web.dev · Web Share API](https://web.dev/articles/web-share)
+- **기대할 수 있는 것:** 공유 버튼을 누르면 기기의 공유 창이 떠서, 카카오톡·메시지·메일 중 늘 쓰는 앱으로 바로 보내요. 앱마다 공유 버튼을 따로 만들지 않아도 되고, 설치하지 않은 브라우저 탭에서도 동작해서 앱 없이 링크로 들어온 구직자에게도 닿아요.
+- **한계:** 파이어폭스 데스크톱에는 공유 창이 없어서 링크 복사를 같이 둬야 해요. 페이지는 사용자가 공유 창을 닫았는지만 알고, 어느 앱을 골랐는지나 실제로 보냈는지는 몰라요.
+- **이렇게 확인해요:** 공유 링크에 utm을 붙여서, 공유로 들어온 방문과 그 방문의 지원 수를 봐요. 공유 창을 닫은 비율(`AbortError`)도 같이 봐요.
+
+```ts
+if ('share' in navigator) {
+  try {
+    await navigator.share({ title, text, url }) // 버튼을 누른 직후에 불러요
+  } catch (error) {
+    if (error.name !== 'AbortError') await navigator.clipboard.writeText(url) // 닫은 게 아니면 링크 복사로 대신해요
+  }
+} else {
+  await navigator.clipboard.writeText(url)
+}
+```
+
+- 버튼을 누른 직후에 불러야 해요. 공유할 이미지를 누른 뒤에 받으면 그사이 "사용자가 누른 것"으로 보지 않아서 `NotAllowedError`가 날 수 있어요. 파일은 미리 받아 두고, 보낼 수 있는지는 `navigator.canShare({ files })`로 먼저 봐요.
+- 받는 앱에 따라 `title`은 빠지고 `text`와 `url`만 갈 수 있어요. 꼭 보여야 하는 말은 `text`에 넣어요.
 
 ### Launch Handler · ➕ PWA를 하면 같이 넣어요
 

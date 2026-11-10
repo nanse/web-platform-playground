@@ -9,7 +9,7 @@
 
 ```
 web-platform-playground/
-├── 01-install-and-launch/   # https://localhost:5101  PWA, Web Install, WCO, Window Management, File/Protocol/Launch/Share, Badging
+├── 01-install-and-launch/   # https://localhost:5101  PWA, Web Install, WCO, Window Management, File/Protocol/Launch/Share Target, Badging, Web Share
 ├── 01-isolated-web-app/     # https://localhost:5111  Isolated Web Apps, Direct Sockets
 ├── 02-smooth-ui/            # https://localhost:5102  View Transitions, Popover, Anchor Positioning
 ├── 03-offline-and-storage/  # https://localhost:5103  Service Worker, OPFS, IndexedDB, Background Sync

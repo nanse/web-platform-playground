@@ -5,6 +5,7 @@ import { Launch } from './launch'
 import { Pwa, useInstallPrompt } from './pwa'
 import { Button, go, inAppWindow, Note, Screen, useRoute } from './ui'
 import { WebInstall } from './web-install'
+import { WebShare } from './web-share'
 import { WindowControls } from './window-controls'
 import { WindowManagement } from './window-management'
 
@@ -27,6 +28,7 @@ const SECTIONS: { title: string; features: Feature[] }[] = [
     features: [
       { id: 'pwa', screen: Pwa, icon: '📲', title: '앱으로 설치하기', summary: '기업 대시보드를 Dock에 둘 수 있어요', supported: 'serviceWorker' in navigator, needsInstall: false },
       { id: 'badging', screen: Badging, icon: '🔴', title: '앱 아이콘에 숫자 띄우기', summary: '확인할 지원자 수를 보여줄 수 있어요', supported: 'setAppBadge' in navigator, needsInstall: true },
+      { id: 'web-share', screen: WebShare, icon: '📤', title: '공고 공유하기', summary: '늘 쓰는 메신저로 바로 보내요', supported: 'share' in navigator, needsInstall: false },
     ],
   },
   {
@@ -61,7 +63,7 @@ function Home() {
       description={
         inAppWindow
           ? '앱 창에서만 되는 기능도 이제 모두 써볼 수 있어요.'
-          : '원티드에서 해볼 만한 건 설치와 배지, 두 가지예요. 대부분 설치한 앱 창에서 동작하니 먼저 설치하고 시작해요.'
+          : '원티드에서 해볼 만한 건 설치, 배지, 공유 세 가지예요. 대부분 설치한 앱 창에서 동작하니 먼저 설치하고 시작해요.'
       }
       cta={
         !inAppWindow && (
