@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import '../../../shared/theme.css';
+@import '../../../shared/ui.css';
+/* shared/의 컴포넌트에 쓴 클래스도 Tailwind가 찾게 해요. */
+@source '../../../shared';

@@ -1,0 +1,20 @@
+{
+  "name": "05-performance-next.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node ../scripts/cert.ts && NODE_OPTIONS=--use-system-ca next dev -p 5115 --experimental-https --experimental-https-key ../.certs/localhost-key.pem --experimental-https-cert ../.certs/localhost.pem",
+    "build": "next build",
+    "start": "next start -p 5115"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.107.1",
+    "next": "^16.4.5",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "tailwindcss": "catalog:"
+  }
+}
