@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="414" viewBox="0 0 560 414" role="img" aria-labelledby="title desc">
+  <title id="title">저장 버튼을 두 번 누르면</title>
+  <desc id="desc">0초와 0.5초에 mutate()를 불러요. scope가 없으면 ①과 ② 저장 요청이 겹쳐서 둘 다 나가고, 화면에는 마지막 ②의 결과만 보여요. scope.id가 같으면 ②는 ①이 끝난 1.5초까지 줄 서서 기다렸다가 나가요.</desc>
+  <style>
+    text { font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; fill: #191f28; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .title { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #6b7684; }
+    .head { font-size: 13px; font-weight: 600; fill: #3182f6; }
+    .lane { font-size: 13px; font-weight: 500; fill: #4e5968; }
+    .small { font-size: 12px; fill: #8b95a1; }
+    .bar { fill: #e8f3ff; stroke: #3182f6; }
+    .bar-text { font-size: 12px; font-weight: 600; fill: #1b64da; }
+    .queue { fill: none; stroke: #b0b8c1; stroke-dasharray: 3 3; }
+    .queue-text { font-size: 12px; font-weight: 600; fill: #6b7684; }
+    .chip { fill: #3182f6; }
+    .chip-text { font-size: 12px; font-weight: 700; fill: #fff; }
+    .tick { font-size: 12px; fill: #8b95a1; text-anchor: middle; }
+  </style>
+
+  <rect width="560" height="414" rx="16" fill="#fff" />
+  <text class="title" x="24" y="38">저장 버튼을 두 번 누르면</text>
+  <text class="sub" x="24" y="62">useMutation은 합치지도 끊지도 않고, 부른 만큼 보내요</text>
+
+  <g stroke="#f2f4f6">
+    <line x1="140" y1="84" x2="140" y2="366" />
+    <line x1="266.7" y1="84" x2="266.7" y2="366" />
+    <line x1="393.3" y1="84" x2="393.3" y2="366" />
+    <line x1="520" y1="84" x2="520" y2="366" />
+  </g>
+
+  <text class="head" x="24" y="100">기본 · scope 없음</text>
+  <text class="lane" x="24" y="150">네트워크</text>
+  <rect class="bar" x="140" y="114" width="190" height="26" rx="8" />
+  <text class="bar-text code" x="150" y="131">① POST /api/user/1</text>
+  <rect class="bar" x="203.3" y="146" width="190" height="26" rx="8" />
+  <text class="bar-text code" x="213" y="163">② POST /api/user/1</text>
+  <text class="lane" x="24" y="202">화면 결과</text>
+  <line x1="140" y1="198" x2="393.3" y2="198" stroke="#b0b8c1" stroke-width="1.5" stroke-dasharray="3 4" />
+  <text class="small" x="148" y="191">저장하는 중</text>
+  <rect class="chip" x="397" y="186" width="80" height="24" rx="12" />
+  <text class="chip-text" x="411" y="203">② 결과만</text>
+  <text class="small" x="140" y="232">①의 결과와 mutate(①, { onSuccess })는 화면에 오지 않아요</text>
+
+  <text class="head" x="24" y="270"><tspan class="code">scope: { id: 'save-user' }</tspan></text>
+  <text class="lane" x="24" y="320">네트워크</text>
+  <rect class="bar" x="140" y="284" width="190" height="26" rx="8" />
+  <text class="bar-text code" x="150" y="301">① POST /api/user/1</text>
+  <rect class="queue" x="203.3" y="316" width="124" height="26" rx="8" />
+  <text class="queue-text" x="213" y="333">② 줄 서서 기다림</text>
+  <rect class="bar" x="330" y="316" width="190" height="26" rx="8" />
+  <text class="bar-text code" x="340" y="333">② POST /api/user/1</text>
+  <text class="small" x="140" y="360">같은 scope.id끼리는 앞 저장이 끝나야 다음이 나가요</text>
+
+  <line x1="140" y1="376" x2="520" y2="376" stroke="#d1d6db" />
+  <text class="tick" x="140" y="396">0초</text>
+  <text class="tick" x="203.3" y="396">0.5</text>
+  <text class="tick" x="266.7" y="396">1.0</text>
+  <text class="tick" x="330" y="396">1.5</text>
+  <text class="tick" x="393.3" y="396">2.0</text>
+  <text class="tick" x="456.7" y="396">2.5</text>
+  <text class="tick" x="520" y="396">3.0초</text>
+</svg>

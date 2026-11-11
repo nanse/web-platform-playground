@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="652" viewBox="0 0 560 652" role="img" aria-labelledby="title desc">
+  <title id="title">서버의 실패 쿨다운 캐시</title>
+  <desc id="desc">지원하기 API 서버 안에서 일어나는 일이에요. 지원하기 요청이 오면 쿨다운 캐시부터 봐요. 있으면 처리하지 않고 캐시된 실패를 4xx로 돌려줘요. 없으면 처리하고, 실패하면 확정인지 불확정인지 나눠요. 확정 실패만 정책에 맞는 TTL로 캐시하고 4xx로 답해요. 불확정 실패는 캐시하지 않고 지원서를 PENDING으로 둔 채 202로 답한 뒤, 기업 채용 시스템에 이미 들어갔는지부터 확인해요. 있으면 지원 완료, 없으면 같은 application_id로 지수 백오프 재전송을 하고, 상한을 넘기면 수동 확인과 운영팀 알림으로 넘겨요.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#8b95a1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; fill: #191f28; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .title { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #6b7684; }
+    .start { fill: #f2f4f6; }
+    .ask { fill: #fff; stroke: #d1d6db; }
+    .ask-text { font-size: 14px; font-weight: 600; text-anchor: middle; }
+    .note-text { font-size: 12px; fill: #6b7684; text-anchor: middle; }
+    .wait { fill: #e8f3ff; stroke: #3182f6; }
+    .wait-text { font-size: 13px; font-weight: 700; fill: #1b64da; text-anchor: middle; }
+    .cut { fill: #fdecee; stroke: #f04452; }
+    .cut-text { font-size: 13px; font-weight: 700; fill: #d91a2a; text-anchor: middle; }
+    .cut-sub { font-size: 12px; fill: #d91a2a; text-anchor: middle; }
+    .keep { fill: #f9fafb; stroke: #8b95a1; }
+    .keep-text { font-size: 13px; font-weight: 700; fill: #4e5968; text-anchor: middle; }
+    .yes { font-size: 12px; font-weight: 600; fill: #6b7684; }
+    .small { font-size: 12px; fill: #8b95a1; }
+    .flow { stroke: #8b95a1; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <rect width="560" height="652" rx="16" fill="#fff" />
+  <text class="title" x="24" y="38">서버의 실패 쿨다운 캐시</text>
+  <text class="sub" x="24" y="62">지원하기 API 서버 안에서 일어나요. 화면은 서버가 준 답만 따라요</text>
+
+  <!-- 요청 -->
+  <rect class="start" x="44" y="84" width="256" height="52" rx="10" />
+  <text class="ask-text" x="172" y="106">지원하기 요청이 와요</text>
+  <text class="note-text code" x="172" y="125">키 = user_id + job_id</text>
+  <line class="flow" x1="172" y1="136" x2="172" y2="156" marker-end="url(#arrow)" />
+
+  <!-- 2-2 캐시 확인 -->
+  <rect class="ask" x="44" y="160" width="256" height="44" rx="10" />
+  <text class="ask-text" x="172" y="187">쿨다운 캐시에 있나요?</text>
+  <line class="flow" x1="300" y1="182" x2="336" y2="182" marker-end="url(#arrow)" />
+  <text class="yes" x="306" y="174">예</text>
+  <rect class="keep" x="340" y="160" width="196" height="44" rx="12" />
+  <text class="keep-text" x="438" y="187">처리 없이 캐시된 실패 · 4xx</text>
+  <line class="flow" x1="172" y1="204" x2="172" y2="228" marker-end="url(#arrow)" />
+  <text class="yes" x="180" y="221">아니요</text>
+
+  <!-- 처리 -->
+  <rect class="ask" x="44" y="232" width="256" height="44" rx="10" />
+  <text class="ask-text" x="172" y="259">검증하고 기업에 보내요</text>
+  <line class="flow" x1="300" y1="254" x2="336" y2="254" marker-end="url(#arrow)" />
+  <text class="yes" x="306" y="246">성공</text>
+  <rect class="wait" x="340" y="232" width="196" height="44" rx="12" />
+  <text class="wait-text" x="438" y="259">지원 완료 · 그 키 캐시 지움</text>
+  <line class="flow" x1="172" y1="276" x2="172" y2="300" marker-end="url(#arrow)" />
+  <text class="yes" x="180" y="293">실패</text>
+
+  <!-- 2-1 분류 -->
+  <rect class="ask" x="44" y="304" width="256" height="44" rx="10" />
+  <text class="ask-text" x="172" y="331">다시 해도 같은 실패인가요?</text>
+  <line class="flow" x1="300" y1="326" x2="336" y2="326" marker-end="url(#arrow)" />
+  <text class="yes" x="306" y="318">확정</text>
+  <rect class="cut" x="340" y="298" width="196" height="56" rx="12" />
+  <text class="cut-text" x="438" y="321">쿨다운 캐시에 넣고 4xx</text>
+  <text class="cut-sub" x="438" y="340">5초, 하루 한도는 자정까지</text>
+  <line class="flow" x1="172" y1="348" x2="172" y2="372" marker-end="url(#arrow)" />
+  <text class="yes" x="180" y="365">불확정 · 캐시하지 않아요</text>
+
+  <!-- 2-3 불확정 -->
+  <rect class="ask" x="44" y="376" width="256" height="44" rx="10" />
+  <text class="ask-text" x="172" y="403">지원서를 PENDING으로 두고 202</text>
+  <line class="flow" x1="172" y1="420" x2="172" y2="444" marker-end="url(#arrow)" />
+
+  <rect class="ask" x="44" y="448" width="256" height="44" rx="10" />
+  <text class="ask-text" x="172" y="475">채용 시스템에 이미 있나요?</text>
+  <line class="flow" x1="300" y1="470" x2="336" y2="470" marker-end="url(#arrow)" />
+  <text class="yes" x="306" y="462">예</text>
+  <rect class="wait" x="340" y="448" width="196" height="44" rx="12" />
+  <text class="wait-text" x="438" y="475">다시 보내지 않고 지원 완료</text>
+  <line class="flow" x1="172" y1="492" x2="172" y2="516" marker-end="url(#arrow)" />
+  <text class="yes" x="180" y="509">아니요</text>
+
+  <rect class="ask" x="44" y="520" width="256" height="52" rx="10" />
+  <text class="ask-text" x="172" y="542">같은 application_id로 다시 보내요</text>
+  <text class="note-text" x="172" y="561">지수 백오프 · 최대 4번 · 3초 안</text>
+  <line class="flow" x1="300" y1="546" x2="336" y2="546" marker-end="url(#arrow)" />
+  <text class="yes" x="306" y="538">상한</text>
+  <rect class="cut" x="340" y="524" width="196" height="44" rx="12" />
+  <text class="cut-text" x="438" y="551">수동 확인 + 운영팀 알림</text>
+
+  <!-- 또 실패하면 원장부터 다시 -->
+  <path class="flow" d="M44 546 H30 V470 H40" marker-end="url(#arrow)" />
+  <text class="small" x="50" y="512">또 실패</text>
+
+  <text class="small" x="24" y="606">확정 실패는 4xx(같은 공고로 다시 보내지 않아요), 불확정은 202(서버가 확인하고 다시 보내요).</text>
+  <text class="small" x="24" y="624">화면(프론트엔드)은 지원 상태를 백오프로 묻고, 오래 걸리면 "확인하고 있어요"를 보여줘요.</text>
+</svg>

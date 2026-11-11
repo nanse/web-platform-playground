@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="396" viewBox="0 0 560 396" role="img" aria-labelledby="title desc">
+  <title id="title">불러오는 중에 다시 부르면</title>
+  <desc id="desc">['user', 1]을 불러오고 0.5초 뒤 한 번 더 불러요. 데이터가 있을 때 refetch()는 ①을 끊고 ②를 새로 보내요. refetch({ cancelRefetch: false })와, 데이터가 없을 때 refetch()는 새 요청 없이 ①을 같이 기다려요.</desc>
+  <style>
+    text { font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; fill: #191f28; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .title { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #6b7684; }
+    .head { font-size: 13px; font-weight: 600; }
+    .lane { font-size: 13px; font-weight: 500; fill: #4e5968; }
+    .small { font-size: 12px; fill: #8b95a1; }
+    .to-cut { fill: #d91a2a; }
+    .to-wait { fill: #1b64da; }
+    .bar { fill: #e8f3ff; stroke: #3182f6; }
+    .bar-text { font-size: 12px; font-weight: 600; fill: #1b64da; }
+    .cut { fill: #fdecee; stroke: #f04452; }
+    .cut-text { font-size: 12px; font-weight: 600; fill: #d91a2a; }
+    .tick { font-size: 12px; fill: #8b95a1; text-anchor: middle; }
+    .again { stroke: #191f28; stroke-width: 1.5; }
+  </style>
+
+  <rect width="560" height="396" rx="16" fill="#fff" />
+  <text class="title" x="24" y="38">불러오는 중에 다시 부르면</text>
+  <text class="sub" x="24" y="62">받은 데이터가 있고 cancelRefetch가 true일 때만 끊어요</text>
+
+  <g stroke="#f2f4f6">
+    <line x1="140" y1="84" x2="140" y2="346" />
+    <line x1="330" y1="84" x2="330" y2="346" />
+    <line x1="425" y1="84" x2="425" y2="346" />
+    <line x1="520" y1="84" x2="520" y2="346" />
+  </g>
+
+  <text class="head" x="24" y="100"><tspan class="code">refetch()</tspan> · 데이터 있음 <tspan class="to-cut">→ 끊고 새로 보내요</tspan></text>
+  <text class="lane" x="24" y="135">네트워크</text>
+  <rect class="cut" x="140" y="116" width="93" height="28" rx="8" />
+  <text class="cut-text" x="150" y="134">① 끊음</text>
+  <rect class="bar" x="237" y="116" width="283" height="28" rx="8" />
+  <text class="bar-text" x="249" y="134">② 새로 보냄</text>
+  <line class="again" x1="235" y1="108" x2="235" y2="152" />
+  <text class="small" x="241" y="164">0.5초에 다시 부름</text>
+
+  <text class="head" x="24" y="186"><tspan class="code">refetch({ cancelRefetch: false })</tspan> <tspan class="to-wait">→ 같이 기다려요</tspan></text>
+  <text class="lane" x="24" y="221">네트워크</text>
+  <rect class="bar" x="140" y="202" width="285" height="28" rx="8" />
+  <text class="bar-text code" x="150" y="220">① GET /api/user/1</text>
+  <line class="again" x1="235" y1="194" x2="235" y2="238" />
+  <text class="small" x="241" y="250">0.5초에 다시 부름 · ①에 합류</text>
+
+  <text class="head" x="24" y="272"><tspan class="code">refetch()</tspan> · 데이터 없음 <tspan class="to-wait">→ 같이 기다려요</tspan></text>
+  <text class="lane" x="24" y="307">네트워크</text>
+  <rect class="bar" x="140" y="288" width="285" height="28" rx="8" />
+  <text class="bar-text code" x="150" y="306">① GET /api/user/1</text>
+  <line class="again" x1="235" y1="280" x2="235" y2="324" />
+  <text class="small" x="241" y="336">0.5초에 다시 부름 · ①에 합류</text>
+
+  <line x1="140" y1="356" x2="520" y2="356" stroke="#d1d6db" />
+  <text class="tick" x="140" y="376">0초</text>
+  <text class="tick" x="235" y="376">0.5</text>
+  <text class="tick" x="330" y="376">1.0</text>
+  <text class="tick" x="425" y="376">1.5</text>
+  <text class="tick" x="520" y="376">2.0초</text>
+</svg>

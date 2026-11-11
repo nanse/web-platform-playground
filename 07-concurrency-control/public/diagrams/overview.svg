@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="992" viewBox="0 0 560 992" role="img" aria-labelledby="title desc">
+  <title id="title">겹친 요청, 끊을까 기다릴까?</title>
+  <desc id="desc">useQuery로 같은 키를 또 부를 때: 받은 데이터가 없으면 같이 기다려요. 데이터가 있어도 cancelRefetch가 false면 같이 기다리고, true면 앞 요청을 끊고 새로 보내요. 키가 바뀌거나 화면을 떠나 구독자가 0이 될 때: queryFn이 signal을 읽었으면 앞 요청을 끊고, 아니면 끝까지 받아 캐시에 둬요. useMutation으로 저장 중에 또 부를 때: scope.id가 같으면 줄 서서 하나씩 보내고, 아니면 둘 다 바로 보내요. 합치려면 mutationFn을 single-flight로 감싸요.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1L8 5L1 9" fill="none" stroke="#8b95a1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; fill: #191f28; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .title { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #6b7684; }
+    .head { font-size: 14px; font-weight: 700; fill: #3182f6; }
+    .ask { fill: #fff; stroke: #d1d6db; }
+    .ask-text { font-size: 14px; font-weight: 600; text-anchor: middle; }
+    .wait { fill: #e8f3ff; stroke: #3182f6; }
+    .wait-text { font-size: 15px; font-weight: 700; fill: #1b64da; text-anchor: middle; }
+    .wait-sub { font-size: 12px; fill: #1b64da; text-anchor: middle; }
+    .cut { fill: #fdecee; stroke: #f04452; }
+    .cut-text { font-size: 15px; font-weight: 700; fill: #d91a2a; text-anchor: middle; }
+    .keep { fill: #f9fafb; stroke: #8b95a1; }
+    .keep-text { font-size: 14px; font-weight: 700; fill: #4e5968; text-anchor: middle; }
+    .yes { font-size: 12px; font-weight: 600; fill: #6b7684; }
+    .note { font-size: 12px; fill: #4e5968; }
+    .note-head { font-size: 12px; font-weight: 700; }
+    .to-cut { fill: #d91a2a; }
+    .to-wait { fill: #1b64da; }
+    .small { font-size: 12px; fill: #8b95a1; }
+    .flow { stroke: #8b95a1; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <rect width="560" height="992" rx="16" fill="#fff" />
+  <text class="title" x="24" y="38">겹친 요청, 끊을까 기다릴까?</text>
+  <text class="sub" x="24" y="62">useQuery는 두 곳에서 정하고, useMutation은 scope로 정해요</text>
+
+  <!-- 같은 키로 또 부를 때: query.fetch() -->
+  <text class="head" x="24" y="102">useQuery · 같은 키로 또 부를 때 · 앞 요청이 아직 오는 중</text>
+
+  <rect class="ask" x="24" y="118" width="276" height="44" rx="10" />
+  <text class="ask-text" x="162" y="145">받은 데이터가 있나요?</text>
+
+  <rect class="ask" x="24" y="202" width="276" height="44" rx="10" />
+  <text class="ask-text" x="162" y="229"><tspan class="code">cancelRefetch</tspan>가 true인가요?</text>
+
+  <rect class="wait" x="340" y="118" width="196" height="128" rx="12" />
+  <text class="wait-text" x="438" y="172">같이 기다려요</text>
+  <text class="wait-sub" x="438" y="194">새 요청 없이 진행 중인</text>
+  <text class="wait-sub" x="438" y="211">Promise를 돌려줘요</text>
+
+  <rect class="cut" x="24" y="286" width="276" height="48" rx="12" />
+  <text class="cut-text" x="162" y="315">앞 요청을 끊고 새로 보내요</text>
+
+  <line class="flow" x1="300" y1="140" x2="336" y2="140" marker-end="url(#arrow)" />
+  <text class="yes" x="304" y="132">아니요</text>
+  <line class="flow" x1="300" y1="224" x2="336" y2="224" marker-end="url(#arrow)" />
+  <text class="yes" x="304" y="216">아니요</text>
+  <line class="flow" x1="162" y1="162" x2="162" y2="198" marker-end="url(#arrow)" />
+  <text class="yes" x="170" y="185">예</text>
+  <line class="flow" x1="162" y1="246" x2="162" y2="282" marker-end="url(#arrow)" />
+  <text class="yes" x="170" y="269">예</text>
+
+  <rect x="24" y="352" width="512" height="116" rx="10" fill="#f9fafb" />
+  <text class="note-head to-cut" x="40" y="378">끊을 수 있어요 · 기본 true</text>
+  <text class="note code" x="40" y="400">refetch()</text>
+  <text class="note code" x="40" y="418">refetchQueries()</text>
+  <text class="note code" x="40" y="436">invalidateQueries()</text>
+  <text class="note code" x="40" y="454">resetQueries()</text>
+  <text class="note-head to-wait" x="290" y="378">늘 기다려요</text>
+  <text class="note" x="290" y="400">useQuery 마운트</text>
+  <text class="note" x="290" y="418">창 포커스</text>
+  <text class="note" x="290" y="436">네트워크 다시 연결</text>
+  <text class="note code" x="290" y="454">refetchInterval</text>
+
+  <line x1="24" y1="496" x2="536" y2="496" stroke="#e5e8eb" />
+
+  <!-- 구독자가 0이 될 때: query.removeObserver() -->
+  <text class="head" x="24" y="530">useQuery · 키가 바뀌거나 화면을 떠나 · 구독자가 0이 될 때</text>
+
+  <rect class="ask" x="24" y="546" width="276" height="44" rx="10" />
+  <text class="ask-text" x="162" y="573">queryFn이 <tspan class="code">signal</tspan>을 읽었나요?</text>
+
+  <rect class="keep" x="340" y="546" width="196" height="44" rx="12" />
+  <text class="keep-text" x="438" y="573">끝까지 받아 캐시에 둬요</text>
+
+  <rect class="cut" x="24" y="630" width="276" height="48" rx="12" />
+  <text class="cut-text" x="162" y="659">앞 요청을 끊어요</text>
+
+  <line class="flow" x1="300" y1="568" x2="336" y2="568" marker-end="url(#arrow)" />
+  <text class="yes" x="304" y="560">아니요</text>
+  <line class="flow" x1="162" y1="590" x2="162" y2="626" marker-end="url(#arrow)" />
+  <text class="yes" x="170" y="613">예</text>
+
+  <text class="small" x="24" y="702">fetch에 signal을 넘겨야 HTTP 요청도 끊겨요. 같은 키를 보는 컴포넌트가</text>
+  <text class="small" x="24" y="719">하나라도 남아 있으면 구독자가 0이 아니라서 끊지 않아요.</text>
+
+  <line x1="24" y1="744" x2="536" y2="744" stroke="#e5e8eb" />
+
+  <!-- 저장 중에 또 부를 때: mutationCache.canRun() -->
+  <text class="head" x="24" y="778">useMutation · 저장 중에 mutate()를 또 부를 때</text>
+
+  <rect class="ask" x="24" y="794" width="276" height="44" rx="10" />
+  <text class="ask-text" x="162" y="821"><tspan class="code">scope.id</tspan>가 같나요?</text>
+
+  <rect class="keep" x="340" y="794" width="196" height="44" rx="12" />
+  <text class="keep-text" x="438" y="821">둘 다 바로 보내요</text>
+
+  <rect class="wait" x="24" y="878" width="276" height="48" rx="12" />
+  <text class="wait-text" x="162" y="907">줄 서서 하나씩 보내요</text>
+
+  <line class="flow" x1="300" y1="816" x2="336" y2="816" marker-end="url(#arrow)" />
+  <text class="yes" x="304" y="808">아니요</text>
+  <line class="flow" x1="162" y1="838" x2="162" y2="874" marker-end="url(#arrow)" />
+  <text class="yes" x="170" y="861">예</text>
+
+  <text class="small" x="24" y="950">합치지도 끊지도 않아요. 합치려면 mutationFn을 single-flight로 감싸요.</text>
+  <text class="small" x="24" y="967">mutationFn은 signal을 받지 않고, 화면을 떠나도 저장은 끝까지 가요.</text>
+</svg>

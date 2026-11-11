@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="404" viewBox="0 0 560 404" role="img" aria-labelledby="title desc">
+  <title id="title">불러오는 중에 키가 바뀌면</title>
+  <desc id="desc">0.5초에 키가 ['user', 1]에서 ['user', 2]로 바뀌어요. queryFn이 fetch에 signal을 넘기면 ①은 0.5초에 끊기고 ②가 나가요. signal을 안 넘기면 ①은 1.5초까지 끝까지 받아 캐시에 두고, ②는 따로 나가요.</desc>
+  <style>
+    text { font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; fill: #191f28; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .title { font-size: 18px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #6b7684; }
+    .head { font-size: 13px; font-weight: 600; fill: #3182f6; }
+    .head-grey { font-size: 13px; font-weight: 600; fill: #6b7684; }
+    .lane { font-size: 13px; font-weight: 500; fill: #4e5968; }
+    .small { font-size: 12px; fill: #8b95a1; }
+    .key { fill: #f2f4f6; }
+    .key-text { font-size: 12px; fill: #333d4b; }
+    .bar { fill: #e8f3ff; stroke: #3182f6; }
+    .bar-text { font-size: 12px; font-weight: 600; fill: #1b64da; }
+    .cut { fill: #fdecee; stroke: #f04452; }
+    .cut-text { font-size: 12px; font-weight: 600; fill: #d91a2a; }
+    .done { fill: #f9fafb; stroke: #8b95a1; }
+    .done-text { font-size: 12px; font-weight: 600; fill: #4e5968; }
+    .tick { font-size: 12px; fill: #8b95a1; text-anchor: middle; }
+    .switch { stroke: #8b95a1; stroke-width: 1.5; stroke-dasharray: 2 3; }
+  </style>
+
+  <rect width="560" height="404" rx="16" fill="#fff" />
+  <text class="title" x="24" y="38">불러오는 중에 키가 바뀌면</text>
+  <text class="sub" x="24" y="62">앞 쿼리의 구독자가 0이 될 때, signal을 읽었는지로 정해요</text>
+
+  <g stroke="#f2f4f6">
+    <line x1="140" y1="84" x2="140" y2="356" />
+    <line x1="330" y1="84" x2="330" y2="356" />
+    <line x1="425" y1="84" x2="425" y2="356" />
+    <line x1="520" y1="84" x2="520" y2="356" />
+  </g>
+
+  <text class="head" x="24" y="100">queryFn이 fetch에 signal을 넘기면</text>
+  <text class="lane" x="24" y="132">화면의 키</text>
+  <rect class="key" x="140" y="114" width="93" height="26" rx="6" />
+  <text class="key-text code" x="148" y="131">['user', 1]</text>
+  <rect class="key" x="237" y="114" width="283" height="26" rx="6" />
+  <text class="key-text code" x="245" y="131">['user', 2]</text>
+  <text class="lane" x="24" y="172">네트워크</text>
+  <rect class="cut" x="140" y="154" width="93" height="26" rx="8" />
+  <text class="cut-text" x="150" y="171">① 끊음</text>
+  <rect class="bar" x="237" y="154" width="283" height="26" rx="8" />
+  <text class="bar-text code" x="249" y="171">② GET /api/user/2</text>
+  <line class="switch" x1="235" y1="108" x2="235" y2="186" />
+  <text class="small" x="140" y="204">0.5초에 키가 바뀌어 ['user', 1]의 구독자가 0이 돼요</text>
+
+  <text class="head-grey" x="24" y="240">signal을 안 넘기면</text>
+  <text class="lane" x="24" y="272">화면의 키</text>
+  <rect class="key" x="140" y="254" width="93" height="26" rx="6" />
+  <text class="key-text code" x="148" y="271">['user', 1]</text>
+  <rect class="key" x="237" y="254" width="283" height="26" rx="6" />
+  <text class="key-text code" x="245" y="271">['user', 2]</text>
+  <text class="lane" x="24" y="312">네트워크</text>
+  <rect class="done" x="140" y="294" width="285" height="26" rx="8" />
+  <text class="done-text" x="150" y="311">① 끝까지 받아 캐시에 둬요</text>
+  <rect class="bar" x="237" y="326" width="283" height="26" rx="8" />
+  <text class="bar-text code" x="249" y="343">② GET /api/user/2</text>
+  <line class="switch" x1="235" y1="248" x2="235" y2="356" />
+
+  <line x1="140" y1="366" x2="520" y2="366" stroke="#d1d6db" />
+  <text class="tick" x="140" y="386">0초</text>
+  <text class="tick" x="235" y="386">0.5</text>
+  <text class="tick" x="330" y="386">1.0</text>
+  <text class="tick" x="425" y="386">1.5</text>
+  <text class="tick" x="520" y="386">2.0초</text>
+</svg>

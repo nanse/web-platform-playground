@@ -17,6 +17,7 @@ web-platform-playground/
 ├── 05-performance/          # https://localhost:5105  LCP·INP·CLS, bfcache, Speculation Rules
 ├── 05-performance-next.js/  # http://localhost:5115   Next.js에서 bfcache, 스크롤 위치, 좋아요 낙관적 업데이트
 ├── 06-identity/             # https://localhost:5106  Passkeys, PasswordCredential, WebOTP
+├── 07-concurrency-control/  # https://localhost:5107  TanStack Query가 겹친 요청을 합칠 때·끊을 때, 저장 single-flight, 서버의 실패 쿨다운 캐시
 ├── shared/                  # 샘플들이 같이 쓰는 디자인: 색·글꼴(theme.css), 화면 틀(ui.tsx·ui.css), 판단 화면(report.tsx)
 └── scripts/cert.ts          # mkcert로 localhost HTTPS 인증서 생성
 ```
